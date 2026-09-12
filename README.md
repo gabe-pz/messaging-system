@@ -2,6 +2,38 @@
 The goal of this project was to create a messaging system that could receive user messages on behalf of a business, process them in an intelligent manner, and submit a reply that is grounded in 
 the business's details. 
 
+### General Overview of System
+The main architecture for this system is a decentralized network of LangChain agents. A central Router agent analyzes each incoming message and assigns it a classification code based on predefined categories. The message is then passed to a corresponding sub-agent that specializes in that category. Then for the categories whose information about it is dependent upon the particular business, the sub-agent will Analyze the message to further determine what exactly it pertains to, Generates a draft reply as a response to the message, and finally Enforces rules created by the business on the draft reply for the final output message. 
+
+Thus, the incoming messages go through a series of 4 steps(when applicable), Route, Analyze, Generator, and Enforce, in order to create a response. Giving rise to the shorthand name for the architecture, RAGE.
+
+A high level overview of the system is shown below:
+
+```mermaid
+
+graph TD;
+
+Input-Message --> Router-Agent;
+
+Router-Agent --> Classification-Code;
+  
+
+Classification-Code --> Sub-Agent-1;
+
+Classification-Code --> Sub-Agent-2;
+
+Classification-Code --> Sub-Agent-N;
+
+Sub-Agent-1 --> Output-Message;
+
+Sub-Agent-2 --> Output-Message;
+
+Sub-Agent-N --> Output-Message;
+
+```
+
+Where each sub-agent, is an agent created with Langchain, that will take an incoming message, and have it go through the remaining 3 steps of, Analyze, Generate, and Enforce, to produce the output message.
+
 ## The path a message takes
 
 ```

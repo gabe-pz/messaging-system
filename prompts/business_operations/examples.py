@@ -1,6 +1,5 @@
 # Few shot examples for the business operations generator
-
-# EXAMPLES
+: 
 def business_operations_generator_examples() -> str:
     return """
     #Examples
