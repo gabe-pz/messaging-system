@@ -1,0 +1,8 @@
+{
+    "b1" : {"Hours Of Operation" : {"Mon, Tue, Wed, Thu, Fri" : "PLACEHOLDER 9AM - 5PM", "Sat" : "PLACEHOLDER 10AM - 2PM", "Sun" : "PLACEHOLDER CLOSED"}},
+    "b2" : {"Business Name" : "PLACEHOLDER BUSINESS NAME"},
+    "b3" : {"Address" : "PLACEHOLDER STREET, PLACEHOLDER CITY", "Address Notes" : "PLACEHOLDER note about the location, only say it when asked"},
+    "b4" : {"Contact Phone" : "PLACEHOLDER (000) 000-0000", "Contact Email" : "PLACEHOLDER email@example.com"},
+    "b5" : {"Payments Accepted" : "PLACEHOLDER payment methods"},
+    "b6" : {"Person Talking" : "PLACEHOLDER name and role the agent speaks as"}
+}

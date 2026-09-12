@@ -1,0 +1,10 @@
+langchain
+langchain-core
+langchain-openai
+langchain-tavily
+langgraph
+flask
+requests
+python-dotenv
+pillow
+opencv-python-headless
