@@ -32,7 +32,7 @@ Sub-Agent-N --> Output-Message;
 
 ```
 
-Where each sub-agent, is a set of LangChain agents(the A, G, and E agents) within some function to process incoming message.
+Where each sub-agent is a set of LangChain agents(the A, G, and E agents) within some function to process the routed incoming message.
 
 ### Architecture of a Specialized Sub-Agent
 
