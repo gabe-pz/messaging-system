@@ -32,7 +32,7 @@ Sub-Agent-N --> Output-Message;
 
 ```
 
-Where each sub-agent, is an agent created with Langchain, that will take an incoming message, and have it go through the remaining 3 steps of, Analyze, Generate, and Enforce, to produce the output message.
+Where each sub-agent, is a set of LangChain agents(the A, G, and E agents) within some function to process incoming message.
 
 ### Architecture of a Specialized Sub-Agent
 
@@ -46,7 +46,7 @@ A breakdown of each step is listed below:
 
 - Finally the **enforce** step is there to ensure that the draft reply has followed all critical rules given by the business for the category, such as pricing rules for the service & pricing sub-agent
   
-Note that the sub-agents are not really "agents" at all, and rather just a bunch of **Language Models** whos outputs are feed into one another, though they are called sub-agents because of how thats what Langchain calls them.
+Note that the sub-agents are not really "agents" at all, and rather just a bunch of **Language Models** where the outputs are feed into one another, though they are called sub-agents because of how thats what Langchain calls them.
 
 A diagram showing what a message goes through after being routed to a sub-agent is shown below:
 
