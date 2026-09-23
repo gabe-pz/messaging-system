@@ -1,11 +1,16 @@
 from fastapi import FastAPI, Request
+from upstash_redis import Redis
+from dotenv import load_dotenv 
 import uvicorn, asyncio
+from src.mams import core
 
 app = FastAPI()
 
-state_dict: dict = {}
-message_batch_dict: dict[str, list[str | list]] = {}
+load_dotenv()
+redis: Redis = Redis.from_env()
 
+state_dict: dict[str, str] = {}
+message_batch_dict: dict[str, list[str | list]] = {}
 async def batch(id: str):
     await asyncio.sleep(30) 
 
@@ -14,6 +19,7 @@ async def batch(id: str):
     current_message: list = message_batch_dict[id] 
 
     #call mams with await asyncio.to_thread(mams_fn, mams_args), to create a worker thread for current id to process without stopping program ever
+    wait asyncio.to_thread(core, current_message, id)
 
     del state_dict[id]
     del message_batch_dict[id]
@@ -28,6 +34,7 @@ async def blooio_hook(request: Request):
     data: dict = await request.json() 
 
     if(data.get("type") == "message.received"):
+        #extract data from the POST
         id: str = data.get("data").get("sender")
         text: str = data.get("data").get("text") 
         attachments: list = data.get("data").get("attachments")
