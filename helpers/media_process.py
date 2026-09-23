@@ -9,17 +9,30 @@ api_key: str = os.environ["OPENROUTER_API_KEY"]
 
 model_name: str = "z-ai/glm-5.3-flash" 
 
-def process_image(data_url: str) -> str: 
-    process_image_prompt: str = "Describe this image in 2-3 sentences" 
-
-    text_block: dict = {"type": "text", "text": process_image_prompt}
-
-    image_info: dict = {"url": data_url} 
-
-    image_block: dict = {"type": "image_url", "image_url": image_info}
-
-    content: list = [text_block, image_block] 
+def process_media(data_url: str, media_type: str) -> str: 
     
+    media_info: dict = {"url": data_url} 
+
+    media_block: dict = {}
+
+    prompt: str = ""
+
+    if(media_type == "i"):
+        prompt = "process this image in 2-3 sentences "
+        media_block: dict = {"type": "image_url", "image_url": media_info}
+
+
+    elif(media_type == "v"):
+        prompt = "process this video in 2-3 sentences"
+        media_block: dict = {"type": "video_url", "video_url": media_info}
+
+    else:
+        raise ValueError("Unsupported Media Type: " + media_type)
+
+    text_block: dict = {"type": "text", "text": prompt}
+
+    content: list = [text_block, media_block] 
+
     message: dict = {"role": "user", "content": content} 
 
     body: dict = {"model": model_name, "messages": [message]}
@@ -32,7 +45,7 @@ def process_image(data_url: str) -> str:
 
     if("choices" not in result):
         print(result)
-        return "ERROR: IMAGE COULD NOT BE PROCESSED"
+        return "ERROR: MEDIA COULT NOT BE PROCESSED"
 
     description: str = result["choices"][0]["message"]["content"]
 

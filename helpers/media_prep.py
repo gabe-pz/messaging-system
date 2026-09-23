@@ -17,11 +17,11 @@ def convert_to_jpeg(image_bytes: bytes) -> bytes:
     
     return buffer.getvalue()
 
-#prepare image for pass to model
-def prepare_image(image_uri: str) -> str:
-    http_response: requests.Respone = requests.get(image_uri) 
+#prepare media for pass to model
+def prepare_media(media_url: str) -> tuple:
+    http_response: requests.Response = requests.get(media_url) 
 
-    image_bytes: bytes = http_response.content
+    media_bytes: bytes = http_response.content
 
     content_type: str = http_response.headers["Content-Type"] 
 
@@ -29,18 +29,20 @@ def prepare_image(image_uri: str) -> str:
 
     safe_types: list[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
 
-    if(media_type not in safe_types):
-        image_bytes = convert_to_jpeg(image_bytes)
-
+    if(media_type.startswith("image/") and media_type not in safe_types):
+        media_bytes = convert_to_jpeg(media_bytes)
         media_type = "image/jpeg"
 
-    encoded_bytes: bytes = base64.b64encode(image_bytes) 
 
-    image_data: str = encoded_bytes.decode("utf-8") 
+    encoded_bytes: bytes = base64.b64encode(media_bytes) 
 
-    data_url: str = "data:" + media_type + ";base64," + image_data 
+    media_data: str = encoded_bytes.decode("utf-8") 
 
-    return data_url 
+    data_url: str = "data:" + media_type + ";base64," + media_data
 
+    if(media_type.startswith("image/")):
+        return (data_url, "i")
+    else:
+        return (data_url, "v")
 
 
