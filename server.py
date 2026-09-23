@@ -19,7 +19,7 @@ async def batch(id: str):
     current_message: list = message_batch_dict[id] 
 
     #call mams with await asyncio.to_thread(mams_fn, mams_args), to create a worker thread for current id to process without stopping program ever
-    wait asyncio.to_thread(core, current_message, id)
+    await asyncio.to_thread(core, current_message, id)
 
     del state_dict[id]
     del message_batch_dict[id]
@@ -37,7 +37,7 @@ async def blooio_hook(request: Request):
         #extract data from the POST
         id: str = data.get("data").get("sender")
         text: str = data.get("data").get("text") 
-        attachments: list = data.get("data").get("attachments")
+        attachments: list[dict] = data.get("data").get("attachments")
 
 
         if(id not in state_dict): 
