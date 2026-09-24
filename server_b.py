@@ -7,11 +7,11 @@ app = FastAPI()
 
 load_dotenv()
 
-#dicts for batching messages
+#dicts for message batching
 state_dict: dict[str, str] = {}
 message_batch_dict: dict[str, list] = {}
 
-#main batch function
+#main batch function for blooio 
 async def batch(id: str):
     await asyncio.sleep(30) 
 

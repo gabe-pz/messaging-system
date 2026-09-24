@@ -3,12 +3,12 @@ import os, requests
 
 load_dotenv() 
 
+#API init for model call
 api_url: str = "https://openrouter.ai/api/v1/chat/completions"
-
 api_key: str = os.environ["OPENROUTER_API_KEY"]
-
 model_name: str = "z-ai/glm-5.3-flash" 
 
+#function to process media 
 def process_media(data_url: str, media_type: str) -> str: 
     
     media_info: dict = {"url": data_url} 
