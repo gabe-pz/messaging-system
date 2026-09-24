@@ -1,5 +1,18 @@
 from helpers.media_prep import prepare_media
 from helpers.media_process import process_media
+from dotenv import load_dotenv 
+from upstash_redis import Redis
+import json
+
+load_dotenv() 
+
+redis_client: Redis = Redis.from_env() 
+
+def read_log(key: str) -> list[str]:
+    values_as_text: list[str] = redis_client.lrange(key, 0, -1)
+
+    return values_as_text
+
 
 def media_element_form(attatchments: list, channel: str) -> list[dict]:
 
@@ -76,5 +89,14 @@ def message_form(current_message_batch: list, channel: str) -> dict:
 
 
 def message_history_form(id: str):
-    pass
+    user_messages: list[str] = read_log(f"{id}_usermsg") 
+    agent_response: list[str] = read_log(f"{id}_agentres") 
+
+    msg_hist: dict = {} 
+
+    for i in range(len(agent_response)):
+        msg_hist[f"user_message_{i}"] = user_messages[i] 
+        msg_hist[f"agent_response_to_user_message_{i}"] = agent_response[i]
+        
+    return msg_hist
 

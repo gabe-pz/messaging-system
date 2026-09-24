@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from dotenv import load_dotenv 
 import uvicorn, asyncio
-from src.mams import core
+from src.core import core
 
 app = FastAPI()
 
