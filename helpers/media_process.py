@@ -27,7 +27,7 @@ def process_media(data_url: str, media_type: str) -> str:
         media_block: dict = {"type": "video_url", "video_url": media_info}
 
     else:
-        raise ValueError("Unsupported Media Type: " + media_type)
+        return "ERROR: MEDIA COULT NOT BE PROCESSED"
 
     text_block: dict = {"type": "text", "text": prompt}
 
@@ -39,9 +39,11 @@ def process_media(data_url: str, media_type: str) -> str:
 
     headers: dict = {"Authorization": "Bearer " + api_key, "Content-Type": "application/json"}
 
-    http_response: requests.Response = requests.post(api_url, headers=headers, json=body)
-
-    result: dict = http_response.json()
+    try:
+        http_response: requests.Response = requests.post(api_url, headers=headers, json=body, timeout=120)
+        result: dict = http_response.json()
+    except (requests.RequestException, ValueError):
+        return "ERROR: MEDIA COULT NOT BE PROCESSED"
 
     if("choices" not in result):
         print(result)

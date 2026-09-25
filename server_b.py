@@ -19,11 +19,11 @@ async def batch(id: str):
 
     current_message_batch: list = message_batch_dict[id] 
 
-    #call mams with await asyncio.to_thread(mams_fn, mams_args), to create a worker thread for current id to process without stopping program ever
-    await asyncio.to_thread(core, current_message_batch, id, "blooio")
-
     del state_dict[id]
     del message_batch_dict[id]
+
+    #call mams with await asyncio.to_thread(mams_fn, mams_args), to create a worker thread for current id to process without stopping program ever
+    await asyncio.to_thread(core, current_message_batch, id, "blooio")
 
 #process POST data
 @app.post("/blooio/webhook")

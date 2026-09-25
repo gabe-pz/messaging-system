@@ -21,11 +21,12 @@ async def batch(id: str):
 
     current_message_batch: list = message_batch_dict[id] 
     
+    del state_dict[id]
+    del message_batch_dict[id]
+
     #call mams with await asyncio.to_thread(mams_fn, mams_args), to create a worker thread for current id to process without stopping program ever
     await asyncio.to_thread(core, current_message_batch, id, "ig")
 
-    del state_dict[id]
-    del message_batch_dict[id]
 
 #process GET data to verify webhook
 @app.get("/ig/webhook")
@@ -39,8 +40,13 @@ async def ig_verify(request: Request) -> PlainTextResponse:
 async def ig_hook(request: Request) -> dict:
     data: dict = await request.json()
 
+    #drop if not entry does not contain messaging or if simply empty
+    entry = data.get("entry")
+    if(not entry or not entry[0].get("messaging")):
+        return {"status": "ok"}
+
     #grab the event
-    event: dict = data.get("entry")[0].get("messaging")[0] 
+    event: dict = entry[0].get("messaging")[0] 
 
     #check if its an incoming message from a user 
     if("message" in event and "is_echo" not in event["message"]):

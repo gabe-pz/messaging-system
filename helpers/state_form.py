@@ -177,9 +177,12 @@ def message_history_form(id: str):
 
     msg_hist: dict = {} 
 
-    for i in range(len(agent_response)):
-        msg_hist[f"user_message_{i}"] = user_messages[i] 
-        msg_hist[f"agent_response_to_user_message_{i}"] = agent_response[i]
+    for i in range(len(user_messages)):
+        msg_hist[f"user_message_{i}"] = user_messages[i]
         
+    for i in range(len(agent_response)):
+        msg_hist[f"agent_response_to_user_message_{i}"] = agent_response[i]
+
+
     return msg_hist
 
