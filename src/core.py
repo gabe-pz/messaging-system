@@ -18,7 +18,15 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
             "message_history": message_history
     }
 
-    print(rf.route(state))
+    print()
+    route_result: str = rf.route(state)
+    print(route_result)
+    print()
+
+    if(route_result== "service_and_pricing"):
+        s_and_p_result: list = rf.service_and_pricing_analyzer(state) 
+        print(s_and_p_result)
+
 
     #write agent response to reddis w/ upstash
     write(f"{id}_agentres", "AGENT RESPONSESS!!")
