@@ -173,15 +173,30 @@ def message_form(current_message_batch: list, channel: str) -> dict:
 #function that forms the message history in state
 def message_history_form(id: str):
     user_messages: list[str] = read(f"{id}_usermsg") 
-    agent_response: list[str] = read(f"{id}_agentres") 
+    agent_responses: list[str] = read(f"{id}_agentres") 
 
     msg_hist: dict = {} 
 
-    for i in range(len(user_messages)):
-        msg_hist[f"user_message_{i}"] = user_messages[i]
-        
-    for i in range(len(agent_response)):
-        msg_hist[f"agent_response_to_user_message_{i}"] = agent_response[i]
+    if(len(user_messages) == len(agent_responses)):
+        for i in range(len(user_messages)):
+            msg_hist[f"user_message_{i}"] = user_messages[i]
+            msg_hist[f"agent_response_to_user_message_{i}"] = agent_responses[i]
+    else:
+        if(len(user_messages) > len(agent_responses)):
+           for i in range(len(user_messages)):
+               if(i < len(agent_responses)):
+                    msg_hist[f"user_message_{i}"] = user_messages[i]
+                    msg_hist[f"agent_response_to_user_message_{i}"] = agent_responses[i]
+               else:
+                    msg_hist[f"user_message_{i}"] = user_messages[i]
+        else: 
+           for i in range(len(agent_responses)):
+               if(i < len(user_messages)):
+                    msg_hist[f"user_message_{i}"] = user_messages[i]
+                    msg_hist[f"agent_response_to_user_message_{i}"] = agent_responses[i]
+
+               else:
+                    msg_hist[f"agent_response_to_user_message_{i}"] = agent_responses[i]
 
 
     return msg_hist
