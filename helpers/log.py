@@ -1,10 +1,40 @@
 from dotenv import load_dotenv 
 from upstash_redis import Redis
-import json
+from upstash_redis.client import Pipeline
+import json, os, requests
 
 load_dotenv() 
 
 redis_client: Redis = Redis.from_env() 
+
+
+# MEMORY LIMITS
+MAX_ENTRIES: int = 12
+
+#once a list is full, every turn except the last KEEP_RECENT is folded into one summary entry
+KEEP_RECENT: int = 4
+
+
+# SUMMARY MODEL
+SUMMARY_URL: str = "https://openrouter.ai/api/v1/chat/completions"
+
+SUMMARY_MODEL: str = "z-ai/glm-5.3-flash"
+
+OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY")
+
+
+# SUMMARY PROMPT
+SUMMARY_PROMPT: str = """
+Summarize this text conversation between Filthy Wraps, a car customization shop, and one customer, so the shop's agent can keep going without the full history.
+The input is JSON, oldest first: user_message_N is the customer and agent_response_to_user_message_N is the shop's reply to it. A conversation_summary entry already covers even earlier messages, merge it in.
+Write one short plain text paragraph, under 120 words, that keeps:
+- the customer's vehicle (year, make, model) exactly as they typed it
+- every service discussed and every price the shop quoted, with the exact numbers written like the shop does (299$, not $299)
+- what the customer decided, asked for, or is still waiting on (booking, the shop checking on something, a hand off to the owner)
+- what any media they sent or replied to showed, if it matters
+Only use facts from the conversation. No greeting, no advice, no markdown, no em dashes.
+"""
+
 
 #read, turns json strings into dicts, and leaves plain text as is 
 def read(key: str) -> list:
@@ -20,13 +50,89 @@ def read(key: str) -> list:
 
     return values
 
+
+# SUMMARIZE
+def summarize(id: str) -> None:
+    user_key: str = f"{id}_usermsg"
+
+    agent_key: str = f"{id}_agentres"
+
+    lock_key: str = f"{id}_summarizing"
+
+    #only one summary per conversation at a time, the lock removes itself after 120 seconds
+    if(not redis_client.set(lock_key, "1", nx=True, ex=120)):
+        return
+
+    try:
+        user_messages: list = read(user_key)
+
+        agent_responses: list = read(agent_key)
+
+        #only fold complete turns so user and agent turns stay paired
+        complete_turns: int = min(len(user_messages), len(agent_responses))
+
+        fold_count: int = complete_turns - KEEP_RECENT
+
+        if(fold_count < 2):
+            return
+
+        conversation: dict = {}
+
+        for i in range(fold_count):
+            conversation[f"user_message_{i}"] = user_messages[i]
+
+            conversation[f"agent_response_to_user_message_{i}"] = agent_responses[i]
+
+        headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+        system_message: dict = {"role": "system", "content": SUMMARY_PROMPT}
+
+        user_message: dict = {"role": "user", "content": json.dumps(conversation, ensure_ascii=False)}
+
+        payload: dict = {"model": SUMMARY_MODEL, "messages": [system_message, user_message], "reasoning": {"effort": "low"}}
+
+        response: requests.Response = requests.post(SUMMARY_URL, headers=headers, json=payload, timeout=30)
+
+        response.raise_for_status()
+
+        result: dict = response.json()
+
+        summary: str = result["choices"][0]["message"]["content"]
+
+        if(summary is None or summary.strip() == ""):
+            raise ValueError("empty summary")
+
+        summary_entry: str = json.dumps({"conversation_summary": summary.strip()}, ensure_ascii=False)
+
+        #swap the folded turns for the summary in one transaction, anything pushed meanwhile stays at the end
+        transaction: Pipeline = redis_client.multi()
+
+        transaction.ltrim(user_key, fold_count, -1)
+
+        transaction.lpush(user_key, summary_entry)
+
+        transaction.ltrim(agent_key, fold_count, -1)
+
+        transaction.lpush(agent_key, "")
+
+        transaction.exec()
+
+    #on any failure every message is kept as is and the next agent reply tries again
+    except Exception as error:
+        print("SUMMARY ERROR: " + str(error))
+
+    finally:
+        redis_client.delete(lock_key)
+
+
 #write
 def write(key: str, value) -> None:
 
-    #ensure staying within limit
-    if(redis_client.llen(key) > 11):
-        #to-do: summarize the conversation from 0 - 11, store it as summary of convo, then remove them
-        redis_client.lpop(key) 
+    #ensure staying within limit, folded when the agent reply is stored so a summary never delays a reply
+    if(key.endswith("_agentres") and redis_client.llen(key) >= MAX_ENTRIES):
+        id: str = key.removesuffix("_agentres")
+
+        summarize(id)
 
 
     if(isinstance(value, dict)):
@@ -35,4 +141,3 @@ def write(key: str, value) -> None:
 
     else:
         redis_client.rpush(key, value) 
-

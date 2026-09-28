@@ -41,7 +41,9 @@ def media_element_form(attatchments: list, referrals: list, channel: str) -> lis
     
     elif(channel == "ig"):
         media_processed: list[list] = []
-        media_can_process: list[str] = ["ig_story", "ig_post", "image", "video"]
+        media_can_process: list[str] = ["ig_story", "story", "story_mention", "ig_post", "image", "video"]
+
+        story_types: list[str] = ["ig_story", "story", "story_mention"]
 
         #prepare attatchments for processing
         for attatchment in attatchments:
@@ -55,8 +57,14 @@ def media_element_form(attatchments: list, referrals: list, channel: str) -> lis
 
                         media_processed.append([data_url_and_type, x.get("payload").get("title")])
 
-                    elif(type_media in media_can_process and type_media == "ig_story"):
-                        data_url_and_type: tuple = prepare_media(x.get("payload").get("story_media_url"))
+                    elif(type_media in media_can_process and type_media in story_types):
+                        story_url: str = x.get("payload").get("url")
+
+                        #meta sends the story link in url, fall back to story_media_url if it is missing
+                        if(not story_url):
+                            story_url = x.get("payload").get("story_media_url")
+
+                        data_url_and_type: tuple = prepare_media(story_url)
 
                         media_processed.append([data_url_and_type, ""])
 
@@ -81,8 +89,14 @@ def media_element_form(attatchments: list, referrals: list, channel: str) -> lis
 
                     media_processed.append([data_url_and_type, x.get("payload").get("title")])
 
-                elif(type_media in media_can_process and type_media == "ig_story"):
-                    data_url_and_type: tuple = prepare_media(x.get("payload").get("story_media_url"))
+                elif(type_media in media_can_process and type_media in story_types):
+                    story_url: str = x.get("payload").get("url")
+
+                    #meta sends the story link in url, fall back to story_media_url if it is missing
+                    if(not story_url):
+                        story_url = x.get("payload").get("story_media_url")
+
+                    data_url_and_type: tuple = prepare_media(story_url)
 
                     media_processed.append([data_url_and_type, x.get("payload").get("title")])
 

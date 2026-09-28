@@ -18,12 +18,44 @@ def process_media(data_url: str, media_type: str) -> str:
     prompt: str = ""
 
     if(media_type == "i"):
-        prompt = "process this image in 2-3 sentences "
+        prompt = """
+        # Prompt
+        process this image, the output should be in the following format
+
+        brief_description: 
+        service_ques: 
+        text_overlays:
+
+        # Note
+            brief_description is a 1-2 sentence description for an LLM to understand fully the image 
+
+            service_ques is a 1-2 sentece description about any and all services it could be talking about 
+            for a car customzation shop that is
+
+            text_overlays is any overlays of text that was on the image, just as they were
+
+        """
         media_block: dict = {"type": "image_url", "image_url": media_info}
 
 
     elif(media_type == "v"):
-        prompt = "process this video in 2-3 sentences"
+        prompt = """
+        # Prompt
+        process this video, the output should be in the following format
+
+        brief_description: 
+        service_ques: 
+        text_overlays:
+
+        # Note
+            - brief_description is a 1-2 sentence description for an LLM to understand fully the video
+
+            - service_ques is a 1-2 sentece description about any and all services it could be talking about 
+            for a car customzation shop that is
+
+            - text_overlays is any overlays of text that was on the video, just as they were
+        """
+
         media_block: dict = {"type": "video_url", "video_url": media_info}
 
     else:
@@ -42,7 +74,8 @@ def process_media(data_url: str, media_type: str) -> str:
     try:
         http_response: requests.Response = requests.post(api_url, headers=headers, json=body, timeout=120)
         result: dict = http_response.json()
-    except (requests.RequestException, ValueError):
+    except (requests.RequestException, ValueError) as error:
+        print("MEDIA PROCESS ERROR: " + str(error))
         return "ERROR: MEDIA COULT NOT BE PROCESSED"
 
     if("choices" not in result):

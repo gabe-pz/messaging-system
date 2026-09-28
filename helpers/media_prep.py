@@ -20,12 +20,14 @@ def convert_to_jpeg(image_bytes: bytes) -> bytes:
 #prepare media for pass to model
 def prepare_media(media_url: str) -> tuple:
     if(not media_url):
+        print("MEDIA PREP ERROR: no media url was given")
         return ("", "")
 
     try:
         http_response: requests.Response = requests.get(media_url, timeout=30)
         http_response.raise_for_status()
-    except requests.RequestException:
+    except requests.RequestException as error:
+        print("MEDIA PREP ERROR: download failed, " + str(error))
         return ("", "")
 
     media_bytes: bytes = http_response.content
@@ -35,6 +37,7 @@ def prepare_media(media_url: str) -> tuple:
     media_type: str = content_type.split(";")[0]
 
     if(not media_type.startswith("image/") and not media_type.startswith("video/")):
+        print("MEDIA PREP ERROR: not an image or video, content type was " + content_type)
         return ("", "")
 
     safe_types: list[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
@@ -42,7 +45,8 @@ def prepare_media(media_url: str) -> tuple:
     if(media_type.startswith("image/") and media_type not in safe_types):
         try:
             media_bytes = convert_to_jpeg(media_bytes)
-        except Exception:
+        except Exception as error:
+            print("MEDIA PREP ERROR: could not convert image to jpeg, " + str(error))
             return ("", "")
         media_type = "image/jpeg"
 
