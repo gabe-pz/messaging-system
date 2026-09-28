@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import os, requests
 
+from src.prompts.media import media_analyze_prompts as maP
+
 load_dotenv() 
 
 #API init for model call
@@ -18,43 +20,13 @@ def process_media(data_url: str, media_type: str) -> str:
     prompt: str = ""
 
     if(media_type == "i"):
-        prompt = """
-        # Prompt
-        process this image, the output should be in the following format
+        prompt = maP.image_analyze_prompt()
 
-        brief_description: 
-        service_ques: 
-        text_overlays:
-
-        # Note
-            brief_description is a 1-2 sentence description for an LLM to understand fully the image 
-
-            service_ques is a 1-2 sentece description about any and all services it could be talking about 
-            for a car customzation shop that is
-
-            text_overlays is any overlays of text that was on the image, just as they were
-
-        """
         media_block: dict = {"type": "image_url", "image_url": media_info}
 
 
     elif(media_type == "v"):
-        prompt = """
-        # Prompt
-        process this video, the output should be in the following format
-
-        brief_description: 
-        service_ques: 
-        text_overlays:
-
-        # Note
-            - brief_description is a 1-2 sentence description for an LLM to understand fully the video
-
-            - service_ques is a 1-2 sentece description about any and all services it could be talking about 
-            for a car customzation shop that is
-
-            - text_overlays is any overlays of text that was on the video, just as they were
-        """
+        prompt = maP.video_analyze_prompt()
 
         media_block: dict = {"type": "video_url", "video_url": media_info}
 

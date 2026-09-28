@@ -6,16 +6,20 @@ from src.core import core
 
 app = FastAPI()
 
+#load env
 load_dotenv()
 
 #dicts for message batching
 state_dict: dict[str, str] = {}
 message_batch_dict: dict[str, list] = {}
 
+#CONSTANTS
+IG_BATCH_TIME: int = 20
+
 #main batch function
 async def batch(id: str):
     
-    await asyncio.sleep(30) 
+    await asyncio.sleep(IG_BATCH_TIME) 
 
     print(message_batch_dict[id]) 
 

@@ -141,3 +141,17 @@ def write(key: str, value) -> None:
 
     else:
         redis_client.rpush(key, value) 
+
+#book state
+#read
+def read_bs(key: str) -> list[str]:
+    values: list[str] = redis_client.lrange(key, 0, -1)
+
+    return values
+#write
+def write_bs(key: str, value) -> None:
+    redis_client.rpush(key, value) 
+
+
+
+
