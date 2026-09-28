@@ -12,7 +12,7 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     #analyzer user message for a car model and update state if exists 
     car_model: str = car_model_analyze(user_message) 
     if(car_model != ""):
-        write_bs(f"{id}_bstate", "car_model", car_model)
+        write_bs(f"{id}_bstate", {"car_model": car_model})
 
     #assemble the message history for state
     message_history: dict = message_history_form(id) 
@@ -32,9 +32,9 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
     try:
         agent_response = m.mams(state)
-
+        print(agent_response)
         if("$" in agent_response):
-            write_bs(f"{id}_bstate", "pricing_state", "SENT")
+            write_bs(f"{id}_bstate", {"pricing_state": "SENT"}) 
 
 
     except Exception as error:
