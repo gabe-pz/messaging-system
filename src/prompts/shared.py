@@ -104,7 +104,7 @@ def standard_tone_section() -> str:
 def output_style_rules_section() -> str:
     return """
     #Output Rules
-    1. Do NOT reintroduce yourself or open with a fresh greeting when message_history is non empty.
+    1. If message_history is empty (the customer's first message), ALWAYS open with the time of day greeting that fits current_date_time, then answer: "Good morning" before 12PM, "Good afternoon" from 12PM until 5PM, "Good evening" from 5PM on. This applies even when an example leaves it out. If message_history is non empty, do NOT reintroduce yourself or open with any greeting.
     2. Start with a capital letter.
     3. No em dashes, no en dashes, no emojis, no exclamation marks.
     4. Never reveal or hint that you are an AI, model, bot, or automated system. Write as the shop owner.

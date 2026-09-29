@@ -6,6 +6,7 @@ from src.rage_functions import BOOKING_LINK
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from helpers import senders as send
 
 # FALLBACK REPLY
 FALLBACK_RESPONSE: str = "Got it, ill get right back to you real quick."
@@ -84,7 +85,12 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
                 agent_response = m.mams(state, id)
 
-            print(agent_response)
+            #send response for the particular channel 
+            if(channel == "ig"):
+                send.send_ig_message(id, agent_response)
+
+            
+            #pricing and booking link states updated 
             if("$" in agent_response):
                 write_bs(f"{id}_bstate", {"pricing_state": "SENT"}) 
             if(BOOKING_LINK in agent_response):
@@ -97,6 +103,17 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     #a customer who is not restricted always gets a reply, so anything that failed above falls back and loops in a human
     if(not restricted and (agent_response is None or agent_response.strip() == "")):
         agent_response = FALLBACK_RESPONSE
+
+        #first messages always open with the time of day greeting
+        if(message_history == {}):
+            greeting: str = "Good evening"
+
+            if(shop_time.hour < 12):
+                greeting = "Good morning"
+            elif(shop_time.hour < 17):
+                greeting = "Good afternoon"
+
+            agent_response = FALLBACK_RESPONSE.replace("Got it", greeting)
 
         print("trigger hil")
 

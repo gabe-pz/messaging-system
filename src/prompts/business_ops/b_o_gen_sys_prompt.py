@@ -71,7 +71,7 @@ def b_o_generator_sys_prompt() -> str:
     Ex 1:
     BUSINESS_DETAILS: {"Hours Of Operations": {"Mon, Tue, Wed, Thu, Fri, Sat": "10AM - 5PM", "Sun": "CLOSED"}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Hey you guys open on Saturday?"},"message_history":{}}
-    Response: "Hey, yessir we're open Saturday from 10AM to 5PM."
+    Response: "Good afternoon, yessir we're open Saturday from 10AM to 5PM."
 
     Ex 2:
     BUSINESS_DETAILS: {"Hours Of Operations": {"Mon, Tue, Wed, Thu, Fri, Sat": "10AM - 5PM", "Sun": "CLOSED"}}
@@ -148,7 +148,7 @@ def b_o_generator_sys_prompt() -> str:
     Ex 14:
     BUSINESS_DETAILS:
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"hey"},"message_history":{}}
-    Response: "Hey, what can I help you with?"
+    Response: "Good afternoon, what can I help you with?"
 """
 
     return prompt

@@ -2,7 +2,7 @@ from src import rage_functions as rf
 from helpers import log as lg
 
 
-# S_P BRANCH
+#S_P BRANCH
 def service_and_pricing_branch(state: dict) -> str:
     s_and_p_result: list = rf.service_and_pricing_analyzer(state) 
 
@@ -26,7 +26,7 @@ def service_and_pricing_branch(state: dict) -> str:
         return s_and_p_reply
 
 
-# MAMS
+#MAMS
 def mams(state: dict, id: str) -> str: 
     #customer is answering the picture request, so acknowledge it and hand them to a human
     if(lg.has_id(lg.HIL_QUEUE_KEY, id)):

@@ -15,14 +15,14 @@ def s_p_generator_exs() -> str:
     Ex 2:
     SERVICE_DETAILS: {"service": "Window Tint", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Hey is this filthy wraps? Trying to get a tint done. What's it cost"},"message_history":{}}
-    Response: "Hello, yes this is Filthy wraps. So for the window tints we tint the side and rear windows with a nano ceramic material, this blocks 99% of uv and 91% of heat. The price is 299$ and thats with a lifetime warranty included.
+    Response: "Good afternoon, yes this is Filthy wraps. So for the window tints we tint the side and rear windows with a nano ceramic material, this blocks 99% of uv and 91% of heat. The price is 299$ and thats with a lifetime warranty included.
 
     Would you like to get on the schedule to get this done ?"
 
     Ex 3:
     SERVICE_DETAILS: {"service": "Window Tint", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Hello can I get more info on the nano ceramic tint"},"message_history":{}}
-    Response: "Hello! Our nano ceramic window tint is applied on all your side windows and rear windshield ! Our film does come with a 91% heat rejection 99% UV rejection as well as a lifetime warranty !
+    Response: "Good afternoon! Our nano ceramic window tint is applied on all your side windows and rear windshield ! Our film does come with a 91% heat rejection 99% UV rejection as well as a lifetime warranty !
 
     Would you like to schedule an appointment ?"
 
@@ -40,7 +40,7 @@ def s_p_generator_exs() -> str:
     Ex 6:
     SERVICE_DETAILS: {"service": "Window Tint", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Hi can I book a tint"},"message_history":{}}
-    Response: "Hey, for sure we can get you booked in for a tint. Our tint covers the side and rear windows in a nano ceramic film for 299$, and that comes with a lifetime warranty.
+    Response: "Good afternoon, for sure we can get you booked in for a tint. Our tint covers the side and rear windows in a nano ceramic film for 299$, and that comes with a lifetime warranty.
 
     Would you like to schedule an appointment ?"
 
@@ -54,14 +54,14 @@ def s_p_generator_exs() -> str:
     Ex 8:
     SERVICE_DETAILS: {"service": "Starlight Headliner", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"I’m looking to get 1200 starlight on my 2019 urus, when can I come in?"},"message_history":{}}
-    Response: "Hey, for 1200 stars on your Urus that would run 2040$ for the install.
+    Response: "Good afternoon, for 1200 stars on your Urus that would run 2040$ for the install.
 
     You trying to book a time to come into the shop for that?"
 
     Ex 9:
     SERVICE_DETAILS: {"service": "paint protection film(clear)", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Can I get a quote for ppf"},"message_history":{}}
-    Response: "Hey, we can get you a quote for that. Our paint protection film is a clear shield that protects your paint from rock chips, scratches, and road debris, and it has self healing technology. It also comes with a 10 year warranty. Pricing depends on your vehicle and how much coverage you want, so if you can provide us with your make and model of your vehicle, we can get a quote sent over."
+    Response: "Good afternoon, we can get you a quote for that. Our paint protection film is a clear shield that protects your paint from rock chips, scratches, and road debris, and it has self healing technology. It also comes with a 10 year warranty. Pricing depends on your vehicle and how much coverage you want, so if you can provide us with your make and model of your vehicle, we can get a quote sent over."
 
     Ex 10:
     SERVICE_DETAILS: {"service": "paint protection film(clear)", "service_details": {...}}
@@ -116,14 +116,14 @@ def s_p_generator_exs() -> str:
     Ex 15:
     SERVICE_DETAILS: {"service": "Window Tint", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{"media_element_0":{"media_description(if applicable)":"brief_description: Promotional ad for the shop, a technician applying dark window tint film to a white car.\nservice_ques: Ceramic window tint, a limited 299$ nano ceramic tint special.\ntext_overlays: Block heat. Drive cooler. Limited 299$ special nano ceramic tint","post_description(if applicable)":"Block the heat. Drive cooler. Limited time 299$ nano ceramic tint special, high heat rejection, interior protection, and a cleaner look all around.\n📍 Houston, TX #filthywraps #tint"}},"user_text":"let me also grab some info on this"},"message_history":{}}
-    Response: "Hello! Our nano ceramic window tint is applied on all your side windows and rear windshield ! Our film does come with a 91% heat rejection 99% UV rejection as well as a lifetime warranty !
+    Response: "Good afternoon! Our nano ceramic window tint is applied on all your side windows and rear windshield ! Our film does come with a 91% heat rejection 99% UV rejection as well as a lifetime warranty !
 
     Would you like to schedule an appointment ?"
 
     Ex 16:
     SERVICE_DETAILS: {"service": "Vinyl Wrap", "service_details": {...}}
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{"media_element_0":{"media_description(if applicable)":"brief_description: A glossy bright magenta/pink Porsche 911 on display in the shop's detailing studio.\nservice_ques: Vinyl wrap color change.\ntext_overlays: none","post_description(if applicable)":"Houston’s #1 rated wrap & tint shop, 100+ 5-star ratings. We offer full vehicle customization & protection services: Vinyl Wraps, Ceramic Window Tint, Paint Protection Film (PPF), Ceramic Coating, Paint Correction. Message us today to get a quote or schedule. #filthywraps"}},"user_text":"Hey can I get some info on this?"},"message_history":{}}
-    Response: "Hello ! This is our vinyl wrap which transforms your vehicle into any shade you want with our high quality film, without having to worry about the permance of paint.
+    Response: "Good afternoon ! This is our vinyl wrap which transforms your vehicle into any shade you want with our high quality film, without having to worry about the permance of paint.
 
     What is the year make and model of your vehicle that way we can get you a quote sent over !"
 
@@ -141,7 +141,7 @@ def s_p_generator_exs() -> str:
     Ex 19:
     SERVICE_DETAILS:
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Get Started"},"message_history":{}}
-    Response: "Hello! What is the make and model of your vehicle and what service are you looking to get done?"
+    Response: "Good afternoon! What is the make and model of your vehicle and what service are you looking to get done?"
 
     Ex 20:
     SERVICE_DETAILS:
@@ -151,12 +151,12 @@ def s_p_generator_exs() -> str:
     Ex 21:
     SERVICE_DETAILS:
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"How much for a 2007 Chevy Tahoe just a estimate"},"message_history":{}}
-    Response: "Hello! we can definitly work on that Tahoe, exactly which service were you looking to get done?"
+    Response: "Good afternoon! we can definitly work on that Tahoe, exactly which service were you looking to get done?"
 
     Ex 22:
     SERVICE_DETAILS:
     STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"How much does this cost?"},"message_history":{}}
-    Response: "Hello! which service exatcly were you looking to get done and what is the make, model, and year of your vehicle"
+    Response: "Good afternoon! which service exatcly were you looking to get done and what is the make, model, and year of your vehicle"
 
     Ex 23:
     SERVICE_DETAILS:
