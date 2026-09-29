@@ -2,6 +2,10 @@ from src import rage_functions as rf
 from helpers import log as lg
 
 
+#NO RESPONSE
+NO_RESPONSE: str = "NO_RESPONSE"
+
+
 #S_P BRANCH
 def service_and_pricing_branch(state: dict) -> str:
     s_and_p_result: list = rf.service_and_pricing_analyzer(state) 
@@ -122,7 +126,35 @@ def mams(state: dict, id: str) -> str:
 
         return s_rh_reply
 
-    #no branch for this route yet, so core sends the fallback reply
-    return ""
+    #owner_conversation branch
+    elif(route_result == "owner_conversation"):
+        #the owner picks up a conversation the system has no record of, so the system stays quiet
+        print("trigger hil")
+
+        return NO_RESPONSE
+
+    #on_the_fence branch
+    elif(route_result == "on_the_fence"):
+        fence_reply: str = rf.on_the_fence_gen(state)
+
+        return fence_reply
+
+    #phone_call branch
+    elif(route_result == "phone_call"):
+        phone_reply: str = rf.phone_call_gen(state)
+
+        #the owner handles the call
+        print("trigger hil")
+
+        return phone_reply
+
+    #off_topic branch
+    elif(route_result == "off_topic"):
+        #spam and off topic messages get no reply
+        return NO_RESPONSE
+
+    #base case, a route with no branch gets core's fallback reply and a human looks at it
+    else:
+        return ""
 
 

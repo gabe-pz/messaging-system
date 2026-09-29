@@ -8,9 +8,11 @@ from zoneinfo import ZoneInfo
 
 from helpers import senders as send
 
-# FALLBACK REPLY
+#FALLBACK REPLY
 FALLBACK_RESPONSE: str = "Got it, ill get right back to you real quick."
 
+#HILs
+HIL_RECIPENT: str = ""
 
 def core(current_message_batch: list, id: str, channel: str) -> None:
     #create the users message from message batch
@@ -69,6 +71,8 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
     restricted: bool = False
 
+    ignored: bool = False
+
     try:
         #restricted customers are handled by a human, so the system does not respond to them
         restricted = has_id(RESTRICTED_KEY, id)
@@ -85,11 +89,14 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
                 agent_response = m.mams(state, id)
 
-            #send response for the particular channel 
-            if(channel == "ig"):
-                send.send_ig_message(id, agent_response)
+            #routes the system ignores on purpose, like off topic, get no reply
+            if(agent_response == m.NO_RESPONSE):
+                print("IGNORED: " + id)
 
-            
+                ignored = True
+
+                agent_response = ""
+
             #pricing and booking link states updated 
             if("$" in agent_response):
                 write_bs(f"{id}_bstate", {"pricing_state": "SENT"}) 
@@ -100,8 +107,8 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     except Exception as error:
         print("CORE ERROR: " + str(error))
 
-    #a customer who is not restricted always gets a reply, so anything that failed above falls back and loops in a human
-    if(not restricted and (agent_response is None or agent_response.strip() == "")):
+    #a customer who is not restricted or ignored always gets a reply, so anything that failed above falls back and loops in a human
+    if(not restricted and not ignored and (agent_response is None or agent_response.strip() == "")):
         agent_response = FALLBACK_RESPONSE
 
         #first messages always open with the time of day greeting
@@ -115,7 +122,12 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
             agent_response = FALLBACK_RESPONSE.replace("Got it", greeting)
 
+        send.send_blooio_message(HIL_RECIPENT, f"HIL triggered on {channel} for user")
         print("trigger hil")
+
+    #send response for the particular channel 
+    if(channel == "ig" and agent_response != ""):
+        send.send_ig_message(id, agent_response)
 
     #write agent response to reddis w/ upstash
     try:

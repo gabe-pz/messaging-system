@@ -24,7 +24,7 @@ def booking_instructions() -> str:
 
 def business_operations_instructions() -> str:
     return """
-    The customer is asking about the shop itself, not a service. That covers hours, open or closed status ("yall open today", "yall have time right now"), where the shop is located or its address, the phone number, email, website, who owns the shop, who they are talking to, how long the shop has been in business, how many employees it has, whether it is licensed or registered, and which payment methods it accepts.
+    The customer is asking about the shop itself, not a service. That covers hours, open or closed status ("yall open today", "yall have time right now"), where the shop is located or its address, email, website, who owns the shop, who they are talking to, how long the shop has been in business, how many employees it has, whether it is licensed or registered, and which payment methods it accepts. NOT the phone number or a phone call, that is phone_call.
     Only when the message has no service question, no service media from the shop, and no yes to a booking question.
     """
 
@@ -38,12 +38,37 @@ def services_req_humans_instructions() -> str:
     NOT a hood only wrap and NOT tint removal, those are service_and_pricing.
     """
 
-def general_text_instructions() -> str:
+def owner_conversation_instructions() -> str:
     return """
-    None of the other categories fit. That covers:
-    - a closing or thank you message with no request, like "thanks", "sounds great thanks", "ok sounds good", or "I'll think about it"
-    - hesitation, or saying they will book at some vague time with no specific timing, and no service question
-    - asking to talk on a phone call
-    - a message that seems to continue a conversation the shop has no record of: `message_history` is empty but the message reads like a follow up, like "could I go on Saturday afternoon after 2" or "could you send me over the finance application"
-    - off topic messages or spam
+    The customer seems to be continuing a conversation the shop has no record of, like one they had with the owner by phone or in person. That covers:
+    - ONLY when `message_history` is empty
+    - AND the message is not clearly service_and_pricing, booking, business_operations, on_the_fence, or phone_call
+    - AND the message reads like a follow up to a missing earlier conversation or an informal inbound, like "could I go on Saturday afternoon after 2" or "could you send me over the finance application"
+    - `current_user_message.user_text` can hold several texts joined into ONE message: if ANY part clearly asks about a service, booking, hours, or location, classify THAT and never owner_conversation. A bare "Yes" or "Ok" next to a real question is filler, not a follow up to a missing conversation
+    """
+
+def on_the_fence_instructions() -> str:
+    return """
+    The customer is on the fence or ending the conversation. That covers:
+    - hesitation or uncertainty, like "let me think about it", "not sure yet", or "its for my brother in law, let me see what he says"
+    - a closing statement with no request, like "thanks will do", "ok sounds good", "sounds great thanks", or "alright lets do it" when the shop's last response did NOT ask them to book
+    - saying they want to book at some vague time in the future with no specific timing, like "ill look into making an appointment soon". A specific timing, like "this week", "a week from now", or "when my car arrives", is booking
+    - it MUST have NO service content and NO actionable request, and it is a STATEMENT, not a question
+    - a closing statement is always on_the_fence, NEVER off_topic
+    """
+
+def phone_call_instructions() -> str:
+    return """
+    The customer wants to talk on the phone. That covers:
+    - asking the shop to call them, or asking to talk it through on a call
+    - sharing their phone number
+    - asking for the shop's phone or contact number
+    """
+
+def off_topic_instructions() -> str:
+    return """
+    The message is off topic or spam and has nothing to do with the shop. That covers:
+    - requests that are not about the shop or a car, like sports, weather, or random questions
+    - spam, sales pitches, promotions, giveaways, or links sent to the shop
+    - ONLY off topic or spam. A closing statement ("thanks", "ok sounds good") is NEVER off_topic, it is on_the_fence
     """

@@ -22,6 +22,9 @@ from src.prompts.booking import b_regen_sys_prompt as bRE
 
 from src.prompts.car_model import car_model_int_sys_prompt as cmiSP
 
+from src.prompts.general import fence_gen_sys_prompt as fenceSP
+from src.prompts.general import phone_gen_sys_prompt as phoneSP
+
 import os, requests, json
 
 #API key
@@ -58,7 +61,10 @@ def route(state: dict) -> str:
             "booking": ri.booking_instructions(), 
             "business_operations": ri.business_operations_instructions(), 
             "services_req_humans": ri.services_req_humans_instructions(), 
-            "general_text": ri.general_text_instructions()
+            "phone_call": ri.phone_call_instructions(), 
+            "on_the_fence": ri.on_the_fence_instructions(), 
+            "owner_conversation": ri.owner_conversation_instructions(), 
+            "off_topic": ri.off_topic_instructions()
     }
 
     #define the instructions for routing and the main question 
@@ -87,7 +93,7 @@ def route(state: dict) -> str:
 
 #analyzer function for service and pricing
 def service_and_pricing_analyzer(state: dict) -> list[str]:
-    SERVICE_CONFIDENCE_THRESHOLD: float = 0.5
+    SERVICE_CONFIDENCE_THRESHOLD: float = 0.1
 
     #questions
     tint_question: dict = {"type": "noul", "instructions": "Is the customer asking about window tint in `current_user_message`?"+"\n"+spaEX.window_tint_exs()}
@@ -529,6 +535,70 @@ def booking_regen(state: dict, booking_details: dict, response: str) -> str:
 def car_model_integrator_gen(state: dict) -> str:
     #system prompt goes first and never changes, so it can be cached
     system_block: dict = {"type": "text", "text": cmiSP.car_model_int_system_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    user_text: str = f"STATE: {state_as_text}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "low"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 4000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# ON THE FENCE GENERATOR
+def on_the_fence_gen(state: dict) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": fenceSP.on_the_fence_system_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    user_text: str = f"STATE: {state_as_text}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "low"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 4000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# PHONE CALL GENERATOR
+def phone_call_gen(state: dict) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": phoneSP.phone_call_system_prompt(), "cache_control": {"type": "ephemeral"}}
 
     system_message: dict = {"role": "system", "content": [system_block]}
 

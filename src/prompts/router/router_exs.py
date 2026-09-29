@@ -20,7 +20,10 @@ def route_exs() -> str:
     3. service_and_pricing: any service content, service media, or a change to the job.
     4. booking: every other booking signal.
     5. business_operations
-    6. general_text
+    6. phone_call
+    7. on_the_fence
+    8. owner_conversation: only when message_history is empty
+    9. off_topic: only off topic or spam, never a closing statement
 
     #Examples (ground truth, mirror them)
     Ex 1:
@@ -45,7 +48,7 @@ def route_exs() -> str:
 
     Ex 5:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Okay, could I go on Saturday afternoon after 2 PM?"},"message_history":{}}
-        answer: general_text
+        answer: owner_conversation
         reason: message_history is empty but the message follows up on a conversation the shop has no record of
 
     Ex 6:
@@ -65,7 +68,7 @@ def route_exs() -> str:
 
     Ex 9:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Could you send me over the finance application. Thanks"},"message_history":{}}
-        answer: general_text
+        answer: owner_conversation
         reason: reads like a conversation with the owner the shop has no record of
 
     Ex 10:
@@ -90,7 +93,7 @@ def route_exs() -> str:
 
     Ex 14:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Thank you!"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Yes I would like to book"},"agent_response_to_user_message_0":"Ok you can go ahead and book here: https://bookinglink.com"}}
-        answer: general_text
+        answer: on_the_fence
         reason: the conversation is over, they got the booking link
 
     Ex 15:
@@ -100,7 +103,7 @@ def route_exs() -> str:
 
     Ex 16:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"I can drop the car in the morning How long do you think it’s gonna take"},"message_history":{}}
-        answer: general_text
+        answer: owner_conversation
         reason: message_history is empty but it reads like a conversation with the owner the shop has no record of
 
     Ex 17:
@@ -135,7 +138,7 @@ def route_exs() -> str:
 
     Ex 23:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"sounds great thanks!"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Yes do you have a waiting area or would it need to be dropped off"},"agent_response_to_user_message_0":"You could do either, we have both a waiting area as well as the option to just drop it off and come back when its done. The turnaround is around 2 hours.\n\nYou can go ahead and book a time that works for you here:\nhttps://filthy-booking-website.vercel.app/"}}
-        answer: general_text
+        answer: on_the_fence
         reason: a closing message with no request
 
     Ex 24:
@@ -145,13 +148,13 @@ def route_exs() -> str:
 
     Ex 25:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Nahh its okay man, I may have my buddy take care of that for me but I appreciate it for sure and I’ll look into making an appointment very soon Thanks for the help and quick response time"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Any chance yall could throw on a new “H” for my honda? Its been off for a while now"},"agent_response_to_user_message_0":"Yessir purple would definitely go crazy on that Accord once the body stuff is cleaned up first.\nFor the full purple vinyl wrap it would still be 3000$, includes the free ceramic coating, and it’s backed by our 5 year warranty.\nOn the Honda “H” emblem, I’m not 100% sure if we can supply and install that or if you’d need to bring the emblem in. Let me double check on that real quick and ill get right back to you."}}
-        answer: general_text
+        answer: on_the_fence
         reason: will book at a vague time, no specific timing, and a thank you
 
     Ex 26:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Is there a number I can call? Easier to just talk it through"},"message_history":{}}
-        answer: general_text
-        reason: asking to talk on a phone call
+        answer: phone_call
+        reason: asking for a number to talk on a phone call
 
     Ex 27:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Yes Where are you located?"},"message_history":{}}
@@ -212,4 +215,49 @@ def route_exs() -> str:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Want to do the doors and the roof satin black on my charger, and the rest stays white"},"message_history":{}}
         answer: services_req_humans
         reason: a roof and door wrap is a partial wrap that is not the hood
+
+    Ex 39:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Let me think about it and ill get back to you"},"message_history":{"user_message_0":{"user_media":{},"user_text":"How much for tint on my 2020 camry"},"agent_response_to_user_message_0":"For your Camry we tint all the side windows and the rear windshield with our nano ceramic film, that blocks 99% of UV and 91% of heat. Price is 299$ and that comes with a lifetime warranty.\n\nWant to get on the schedule for that ?"}}
+        answer: on_the_fence
+        reason: hesitation with no service question and no request
+
+    Ex 40:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Not sure yet, its for my brother in law let me see what he says."},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for front windshield tint on a model y"},"agent_response_to_user_message_0":"For the front windshield on a Model Y that runs 200$ in our nano ceramic film, and that comes with a lifetime warranty.\n\nWant to get on the schedule for this?"}}
+        answer: on_the_fence
+        reason: on the fence, waiting on someone else
+
+    Ex 41:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"can you just give me a call? 832-555-0142"},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for a full wrap on my tahoe"},"agent_response_to_user_message_0":"For your Tahoe a full vinyl wrap runs 4500$, and that comes with a free ceramic coating and our 5 year warranty.\n\nWant to get on the schedule for that?"}}
+        answer: phone_call
+        reason: asks the shop to call and shares a number
+
+    Ex 42:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"whats the best number to call yall at"},"message_history":{}}
+        answer: phone_call
+        reason: asking for the shop's phone number
+
+    Ex 43:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Hi, I help businesses get more Google reviews and rank higher on maps, interested in a free audit?"},"message_history":{}}
+        answer: off_topic
+        reason: a sales pitch that has nothing to do with the shop's services
+
+    Ex 44:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"who yall got winning the super bowl this year"},"message_history":{}}
+        answer: off_topic
+        reason: off topic, not about the shop or a car
+
+    Ex 45:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"ok sounds good"},"message_history":{"user_message_0":{"user_media":{},"user_text":"do yall have a waiting area"},"agent_response_to_user_message_0":"Yeah we have a waiting area, or you can drop it off and come back when its done."}}
+        answer: on_the_fence
+        reason: a closing statement is on_the_fence, never off_topic
+
+    Ex 46:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Yes How much for tint on a 2020 camry"},"message_history":{}}
+        answer: service_and_pricing
+        reason: the bare "Yes" is filler and the real question is about a service, so never owner_conversation
+
+    Ex 47:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"ill book once my car gets here next week"},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for tint on a 2024 civic"},"agent_response_to_user_message_0":"For your Civic we tint all the side windows and the rear windshield with our nano ceramic film for 299$, and that comes with a lifetime warranty.\n\nWant to get on the schedule for that ?"}}
+        answer: booking
+        reason: wants to book at a specific timing, when the car arrives next week
 """
