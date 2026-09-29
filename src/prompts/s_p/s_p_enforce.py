@@ -79,6 +79,7 @@ def s_p_enforce() -> str:
         - item 2
     9. The response has anything besides the message the customer should read, like a sentence about a draft, what was changed, which rule was applied, notes, or reasoning. The <ESCALATE> and <OWNER_ASK> tokens are fine.
     10. The response is in a different language than the customer wrote in. A customer who wrote in Spanish gets a Spanish response.
+    11. The response agrees to or confirms a specific day or time for the customer to come in, like "Friday works" or "see you Saturday", or puts a day or time in the booking question, like "Want me to get you on the books for Friday?". Stating the shop hours is fine.
 
     #Tone To Enforce
     -The response breaks a tone rule when:

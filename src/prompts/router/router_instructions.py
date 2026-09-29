@@ -8,6 +8,8 @@ def service_and_prices_instructions() -> str:
     - media from the shop about a service, like "how much is this" or "info on this" with a post, reel, story, or ad attached, even if the text also asks where the shop is
     - the customer giving their vehicle because the shop's last response asked for it to price a service
     - the customer changing the job (a different service, quantity, or vehicle), even while saying yes to booking
+    - a hood only wrap or tint removal, those are priced services
+    - NOT a roof wrap, a partial wrap that is not the hood, a chrome delete, or any other custom job, those are services_req_humans
     """
 
 def booking_instructions() -> str:
@@ -24,6 +26,16 @@ def business_operations_instructions() -> str:
     return """
     The customer is asking about the shop itself, not a service. That covers hours, open or closed status ("yall open today", "yall have time right now"), where the shop is located or its address, the phone number, email, website, who owns the shop, who they are talking to, how long the shop has been in business, how many employees it has, whether it is licensed or registered, and which payment methods it accepts.
     Only when the message has no service question, no service media from the shop, and no yes to a booking question.
+    """
+
+def services_req_humans_instructions() -> str:
+    return """
+    The customer is asking about a custom job the shop can only price after seeing pictures. That covers:
+    - a roof wrap, including the roof with the pillars or mirrors
+    - a partial wrap that is NOT only the hood, like the doors, one side, the bumpers, half the car, or stripes
+    - a chrome delete, blacking out chrome trim, window trim, badges, or emblems
+    - any other custom service that is not one of the shop's set services and depends on the car or the job, like removing an old wrap or PPF, or their own custom design or graphics
+    NOT a hood only wrap and NOT tint removal, those are service_and_pricing.
     """
 
 def general_text_instructions() -> str:

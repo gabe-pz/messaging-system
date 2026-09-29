@@ -23,6 +23,14 @@ SUMMARY_MODEL: str = "z-ai/glm-5.3-flash"
 OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY")
 
 
+# HIL LISTS
+#ids waiting to send pictures after asking about a custom service
+HIL_QUEUE_KEY: str = "hil_queue"
+
+#ids handed to a human, the system never responds to them
+RESTRICTED_KEY: str = "hil_restricted"
+
+
 # SUMMARY PROMPT
 SUMMARY_PROMPT: str = """
 Summarize this text conversation between Filthy Wraps, a car customization shop, and one customer, so the shop's agent can keep going without the full history.
@@ -152,3 +160,30 @@ def write_bs(key: str, value) -> None:
 
     else:
         redis_client.rpush(key, value) 
+
+
+# BOOK STATE READ
+def read_bs(key: str) -> dict:
+    book_state: dict = {}
+
+    #every write_bs adds one dict to the list, so the newest value for each field wins
+    for value in read(key):
+        if(isinstance(value, dict)):
+            book_state.update(value)
+
+    return book_state
+
+
+# ID LISTS
+def add_id(key: str, id: str) -> None:
+    redis_client.rpush(key, id)
+
+
+def has_id(key: str, id: str) -> bool:
+    ids: list[str] = redis_client.lrange(key, 0, -1)
+
+    return id in ids
+
+
+def remove_id(key: str, id: str) -> None:
+    redis_client.lrem(key, 0, id)

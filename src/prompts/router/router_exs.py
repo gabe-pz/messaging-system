@@ -5,6 +5,7 @@ def route_exs() -> str:
     #Context
     -Filthy Wraps is a car customization shop with two locations in Texas (Cypress and Houston). It offers window tint, vinyl wraps, clear PPF, colored PPF, windshield PPF, ceramic coating with paint correction, caliper wraps, and starlight headliners.
     -Signals of a service question: a service name (tint, tinted, windshield, windows, wrap, PPF, clear bra, ceramic, coating, paint correction, caliper, starlight, stars, headliner), or price, cost, quote, estimate, rate, turnaround, how long the job takes, or specs like "1000 stars".
+    -Signals of a custom job that needs a human: a roof wrap, a partial wrap that is not only the hood (doors, one side, bumpers, half the car, stripes), a chrome delete or blacking out trim, badges, or emblems, removing an old wrap or PPF, or their own custom design. A hood only wrap and tint removal are NOT custom jobs, they are priced services.
     -`current_user_message.user_text` is every text the customer sent in this batch joined into ONE message. If any part of it asks about a service, booking, hours, or location, classify that part. A bare "Yes" or "Ok" next to a real question is filler.
     -`current_user_message.user_media` counts as service content when it shows a service, for example a shop post, reel, story, or ad about tint or wraps.
 
@@ -14,11 +15,12 @@ def route_exs() -> str:
     -`current_date_time` never changes the category. A question about hours is business_operations whether the shop is open that day or not.
 
     #Priority When More Than One Category Fits
-    1. booking: the shop's last response asked if they want to get booked or on the schedule and the customer says yes, and the message does not change the job.
-    2. service_and_pricing: any service content, service media, or a change to the job.
-    3. booking: every other booking signal.
-    4. business_operations
-    5. general_text
+    1. services_req_humans: any custom job that needs a human, even when the message also says yes to booking or asks something else.
+    2. booking: the shop's last response asked if they want to get booked or on the schedule and the customer says yes, and the message does not change the job.
+    3. service_and_pricing: any service content, service media, or a change to the job.
+    4. booking: every other booking signal.
+    5. business_operations
+    6. general_text
 
     #Examples (ground truth, mirror them)
     Ex 1:
@@ -170,4 +172,44 @@ def route_exs() -> str:
         state: {"current_date_time":"Friday, September 04, 2026 at 06:10 PM","current_user_message":{"user_media":{},"user_text":"Yes Do you do a veteran discount?"},"message_history":{"user_message_0":{"user_media":{},"user_text":"2026 F-150 Lariat"},"agent_response_to_user_message_0":"Appreciate it! For your 2026 F-150 Lariat, the full job in the NEX+ series ceramic, all side windows, rear glass, and the front windshield, runs 900$. That film is machine cut for a perfect fit with no scratches, gives you our highest heat rejection, and comes with a lifetime warranty.\n\nWant me to get you on the books for that?"}}
         answer: booking
         reason: yes to the booking question, and the discount question does not change the job
+
+    Ex 31:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"How much to wrap just the roof gloss black on my camry"},"message_history":{}}
+        answer: services_req_humans
+        reason: a roof wrap is a custom job that needs a human
+
+    Ex 32:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Can yall do a chrome delete on a 2022 tahoe? window trim and the grille"},"message_history":{}}
+        answer: services_req_humans
+        reason: a chrome delete is a custom job that needs a human
+
+    Ex 33:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"what would it cost to wrap only the front and rear bumpers matte black"},"message_history":{}}
+        answer: services_req_humans
+        reason: a partial wrap that is not the hood is a custom job that needs a human
+
+    Ex 34:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"How much to wrap just the hood black"},"message_history":{}}
+        answer: service_and_pricing
+        reason: a hood only wrap is a priced service, not a custom job
+
+    Ex 35:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"How much do yall charge to take off old tint on all my windows"},"message_history":{}}
+        answer: service_and_pricing
+        reason: tint removal is a priced service, not a custom job
+
+    Ex 36:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"I got an old faded wrap on my mustang, can yall take it off?"},"message_history":{}}
+        answer: services_req_humans
+        reason: removing an old wrap depends on the car and the wrap, so it needs a human
+
+    Ex 37:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Yes, also could yall black out the badges and the window chrome while its in?"},"message_history":{"user_message_0":{"user_media":{},"user_text":"2021 Accord sport"},"agent_response_to_user_message_0":"For your 2021 Accord Sport, a full vinyl wrap runs 3000$, and that comes with a free ceramic coating and our 5 year warranty.\n\nWant to get on the schedule for this?"}}
+        answer: services_req_humans
+        reason: says yes to booking but adds a chrome delete, and a custom job that needs a human outranks booking
+
+    Ex 38:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Want to do the doors and the roof satin black on my charger, and the rest stays white"},"message_history":{}}
+        answer: services_req_humans
+        reason: a roof and door wrap is a partial wrap that is not the hood
 """

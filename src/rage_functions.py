@@ -13,6 +13,15 @@ from src.prompts.business_ops import b_o_gen_sys_prompt as bogSP
 from src.prompts.business_ops import b_o_enforce as boE
 from src.prompts.business_ops import b_o_regen_sys_prompt as boRE
 
+from src.prompts.hil import s_rh_gen_sys_prompt as srhSP
+from src.prompts.hil import ack_gen_sys_prompt as ackSP
+
+from src.prompts.booking import b_gen_sys_prompt as bgSP
+from src.prompts.booking import b_enforce as bE
+from src.prompts.booking import b_regen_sys_prompt as bRE
+
+from src.prompts.car_model import car_model_int_sys_prompt as cmiSP
+
 import os, requests, json
 
 #API key
@@ -34,6 +43,11 @@ with open("details-json/service_pricing_details.json", "r") as file:
 with open("details-json/business_operations_details.json", "r") as file: 
     b_o_details_dict: dict = json.load(file)
 
+
+# BOOKING LINK
+BOOKING_LINK: str = "https://filthy-booking-website.vercel.app"
+
+
 #main route function
 def route(state: dict) -> str:
     CONFIDENCE_THRESHOLD: float = 0.1
@@ -43,6 +57,7 @@ def route(state: dict) -> str:
             "service_and_pricing": ri.service_and_prices_instructions(), 
             "booking": ri.booking_instructions(), 
             "business_operations": ri.business_operations_instructions(), 
+            "services_req_humans": ri.services_req_humans_instructions(), 
             "general_text": ri.general_text_instructions()
     }
 
@@ -344,3 +359,200 @@ def business_operations_regen(state: dict, business_details: list, response: str
     reply: str = result["choices"][0]["message"]["content"]
 
     return reply
+
+
+
+#generator function for services requiring humans
+def services_rh_gen(state: dict) -> str: 
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": srhSP.s_rh_system_prompt(), "cache_control": {"type": "ephemeral"}}
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    #compact json with no extra spaces or escaped unicode
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    #create the text to pass
+    user_text: str = f"STATE: {state_as_text}"
+    user_message: dict = {"role": "user", "content": user_text}
+
+    #prepare the request
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+    reasoning_settings: dict = {"effort": "medium"}
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 8000}
+
+    #send request
+    http_response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+    http_response.raise_for_status()
+
+    #grab reply
+    result: dict = http_response.json()
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# ACKNOWLEDGE GENERATOR
+def acknowledge_service_gen(state: dict) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": ackSP.ack_system_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    user_text: str = f"STATE: {state_as_text}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "low"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 4000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# BOOKING GENERATOR
+def booking_generator(state: dict, booking_details: dict) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": bgSP.b_generator_sys_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    details_as_text: str = json.dumps(booking_details, ensure_ascii=False)
+
+    user_text: str = f"BOOKING_DETAILS: {details_as_text}\n STATE: {state_as_text}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "medium"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 8000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# BOOKING ENFORCER
+def booking_enforcer(state: dict, booking_details: dict, response: str) -> bool:
+    ENFORCE_CONFIDENCE_THRESHOLD: float = 0.65
+
+    enforce_question: dict = {"type": "noul", "instructions": f"Is the agents response currently going against any of the rules defined here\n{bE.b_enforce()}\n?"}
+
+    enforce_q: dict = {"enforce_A": enforce_question}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    details_as_text: str = json.dumps(booking_details, ensure_ascii=False)
+
+    #the checker needs the booking details and conversation to judge the link and deposit rules
+    enforce_state: str = f"BOOKING_DETAILS: {details_as_text}\nSTATE: {state_as_text}\nAGENT_RESPONSE:\n{response}"
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    payload: dict = {"model": ROUTER_MODEL, "state": enforce_state, "questions": enforce_q}
+
+    http_response: requests.Response = requests.post(DECISIONS_URL, headers=headers, json=payload, timeout=10)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    probability_yes: float = result["answers"]["enforce_A"]["noul"]
+
+    if(probability_yes > ENFORCE_CONFIDENCE_THRESHOLD):
+        return True
+    else:
+        return False
+
+
+# BOOKING REGEN
+def booking_regen(state: dict, booking_details: dict, response: str) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": bRE.b_regenerator_sys_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    details_as_text: str = json.dumps(booking_details, ensure_ascii=False)
+
+    user_text: str = f"BOOKING_DETAILS: {details_as_text}\n STATE: {state_as_text}\n FLAGGED_RESPONSE: {response}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "medium"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 8000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# CAR MODEL GENERATOR
+def car_model_integrator_gen(state: dict) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": cmiSP.car_model_int_system_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    user_text: str = f"STATE: {state_as_text}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "low"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 4000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+

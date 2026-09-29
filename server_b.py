@@ -9,7 +9,7 @@ app = FastAPI()
 load_dotenv()
 
 #dicts for message batching
-state_dict: dict[str, str] = {}
+state_dict: dict[str, asyncio.Task] = {}
 message_batch_dict: dict[str, list] = {}
 
 #blooio wait time 

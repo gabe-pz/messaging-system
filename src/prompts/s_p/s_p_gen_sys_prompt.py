@@ -222,6 +222,7 @@ def s_p_generator_system_prompt() -> str:
     3. If the customer asks for a recommendation on a specific option, infer the most likely most-popular choice based on the information you currently have.
     4. If the customer says they will remove the tint themselves, tell them they are welcome to, but if there is still glue left on the windows they will still be charged for the removal.
     5. Never mention that a deposit is required, unless the customer explicitly asks about it.
+    6. If the customer asks to come in on a specific day or time, NEVER agree to it or confirm it (no "Friday works", no "see you Saturday"), and NEVER put that day or time in the booking question. They pick an open time when they book. Stating the shop hours is fine.
 
     ##Important Response Rules
     1. Every response must include the exact price for the service asked about, UNLESS the price depends on the vehicle (make/model), for example: vinyl wraps, PPF, front windshield tint.
