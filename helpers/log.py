@@ -150,26 +150,14 @@ def write(key: str, value) -> None:
     else:
         redis_client.rpush(key, value) 
 
-#book state
-#write
-def write_bs(key: str, value) -> None:
+#BOOK STATE
+#overwrites only the fields given, like {"car_model": "..."}, the other fields stay
+def write_bs(key: str, value: dict) -> None:
+    redis_client.hset(key, values=value)
 
-    if(isinstance(value, dict)):
-        value_as_text: str = json.dumps(value, ensure_ascii=False) 
-        redis_client.rpush(key, value_as_text) 
-
-    else:
-        redis_client.rpush(key, value) 
-
-
-# BOOK STATE READ
+#every field as one dict, {} when nothing was written yet
 def read_bs(key: str) -> dict:
-    book_state: dict = {}
-
-    #every write_bs adds one dict to the list, so the newest value for each field wins
-    for value in read(key):
-        if(isinstance(value, dict)):
-            book_state.update(value)
+    book_state: dict = redis_client.hgetall(key)
 
     return book_state
 
@@ -187,3 +175,5 @@ def has_id(key: str, id: str) -> bool:
 
 def remove_id(key: str, id: str) -> None:
     redis_client.lrem(key, 0, id)
+
+

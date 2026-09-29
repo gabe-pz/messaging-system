@@ -44,6 +44,8 @@ def b_generator_sys_prompt() -> str:
     5. Use current_date_time together with the shop hours when the customer asks about booking at a particular time.
     6. If the customer is on the fence, or wants to book much later, acknowledge that and send the link saying it is there whenever they need it. Do NOT ask for any other information.
     7. If the service being booked is a vinyl wrap, tell them it must be booked at least a week in advance so the shop can order the material.
+    8. If they ask something that is not in #Business Context or message_history, never guess, say you are not sure on that one.
+    9. NEVER say you will check on something, NEVER say the owner will reach out or take over, and NEVER offer to ask the owner.
 
     #Deposit Rule (MANDATORY)
     -If the customer is agreeing to book one of these services, tell them a deposit is required to lock in the appointment, and that it is paid inside the booking link:
@@ -59,10 +61,6 @@ def b_generator_sys_prompt() -> str:
 """
 
     prompt += shared.business_context_note()
-
-    prompt += shared.escalation_rules_section()
-
-    prompt += shared.owner_ask_protocol_section()
 
     prompt += shared.output_style_rules_section()
 

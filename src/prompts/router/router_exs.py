@@ -5,7 +5,8 @@ def route_exs() -> str:
     #Context
     -Filthy Wraps is a car customization shop with two locations in Texas (Cypress and Houston). It offers window tint, vinyl wraps, clear PPF, colored PPF, windshield PPF, ceramic coating with paint correction, caliper wraps, and starlight headliners.
     -Signals of a service question: a service name (tint, tinted, windshield, windows, wrap, PPF, clear bra, ceramic, coating, paint correction, caliper, starlight, stars, headliner), or price, cost, quote, estimate, rate, turnaround, how long the job takes, or specs like "1000 stars".
-    -Signals of a custom job that needs a human: a roof wrap, a partial wrap that is not only the hood (doors, one side, bumpers, half the car, stripes), a chrome delete or blacking out trim, badges, or emblems, removing an old wrap or PPF, or their own custom design. A hood only wrap and tint removal are NOT custom jobs, they are priced services.
+    -Signals of a service that needs the owner to see pictures: a roof wrap, a partial wrap that is not only the hood (doors, one side, bumpers, half the car, stripes), a chrome delete or blacking out trim, badges, or emblems, removing an old wrap or PPF, their own custom design, house tint, or a motorcycle. A factory hood only wrap and tint removal are NOT custom jobs, they are priced services.
+    -Signals of an escalation that needs the owner himself: a complaint about work the shop already did, a refund, financing or payment plans, the status of a car already at the shop, or the shop's social media.
     -`current_user_message.user_text` is every text the customer sent in this batch joined into ONE message. If any part of it asks about a service, booking, hours, or location, classify that part. A bare "Yes" or "Ok" next to a real question is filler.
     -`current_user_message.user_media` counts as service content when it shows a service, for example a shop post, reel, story, or ad about tint or wraps.
 
@@ -15,15 +16,16 @@ def route_exs() -> str:
     -`current_date_time` never changes the category. A question about hours is business_operations whether the shop is open that day or not.
 
     #Priority When More Than One Category Fits
-    1. services_req_humans: any custom job that needs a human, even when the message also says yes to booking or asks something else.
-    2. booking: the shop's last response asked if they want to get booked or on the schedule and the customer says yes, and the message does not change the job.
-    3. service_and_pricing: any service content, service media, or a change to the job.
-    4. booking: every other booking signal.
-    5. business_operations
-    6. phone_call
-    7. on_the_fence
-    8. owner_conversation: only when message_history is empty
-    9. off_topic: only off topic or spam, never a closing statement
+    1. escalation: a complaint, a refund, financing, a car already at the shop, or the shop's social media, even when the message also says yes to booking or asks something else.
+    2. services_req_humans: any service that needs the owner to see pictures, even when the message also says yes to booking or asks something else.
+    3. booking: the shop's last response asked if they want to get booked or on the schedule and the customer says yes, and the message does not change the job.
+    4. service_and_pricing: any service content, service media, or a change to the job.
+    5. booking: every other booking signal.
+    6. business_operations
+    7. phone_call
+    8. closing_statements
+    9. owner_conversation: only when message_history is empty
+    10. off_topic: only off topic or spam, never a closing statement
 
     #Examples (ground truth, mirror them)
     Ex 1:
@@ -93,7 +95,7 @@ def route_exs() -> str:
 
     Ex 14:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Thank you!"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Yes I would like to book"},"agent_response_to_user_message_0":"Ok you can go ahead and book here: https://bookinglink.com"}}
-        answer: on_the_fence
+        answer: closing_statements
         reason: the conversation is over, they got the booking link
 
     Ex 15:
@@ -138,7 +140,7 @@ def route_exs() -> str:
 
     Ex 23:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"sounds great thanks!"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Yes do you have a waiting area or would it need to be dropped off"},"agent_response_to_user_message_0":"You could do either, we have both a waiting area as well as the option to just drop it off and come back when its done. The turnaround is around 2 hours.\n\nYou can go ahead and book a time that works for you here:\nhttps://filthy-booking-website.vercel.app/"}}
-        answer: on_the_fence
+        answer: closing_statements
         reason: a closing message with no request
 
     Ex 24:
@@ -148,7 +150,7 @@ def route_exs() -> str:
 
     Ex 25:
         state: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"Nahh its okay man, I may have my buddy take care of that for me but I appreciate it for sure and I’ll look into making an appointment very soon Thanks for the help and quick response time"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Any chance yall could throw on a new “H” for my honda? Its been off for a while now"},"agent_response_to_user_message_0":"Yessir purple would definitely go crazy on that Accord once the body stuff is cleaned up first.\nFor the full purple vinyl wrap it would still be 3000$, includes the free ceramic coating, and it’s backed by our 5 year warranty.\nOn the Honda “H” emblem, I’m not 100% sure if we can supply and install that or if you’d need to bring the emblem in. Let me double check on that real quick and ill get right back to you."}}
-        answer: on_the_fence
+        answer: closing_statements
         reason: will book at a vague time, no specific timing, and a thank you
 
     Ex 26:
@@ -218,12 +220,12 @@ def route_exs() -> str:
 
     Ex 39:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Let me think about it and ill get back to you"},"message_history":{"user_message_0":{"user_media":{},"user_text":"How much for tint on my 2020 camry"},"agent_response_to_user_message_0":"For your Camry we tint all the side windows and the rear windshield with our nano ceramic film, that blocks 99% of UV and 91% of heat. Price is 299$ and that comes with a lifetime warranty.\n\nWant to get on the schedule for that ?"}}
-        answer: on_the_fence
+        answer: closing_statements
         reason: hesitation with no service question and no request
 
     Ex 40:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Not sure yet, its for my brother in law let me see what he says."},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for front windshield tint on a model y"},"agent_response_to_user_message_0":"For the front windshield on a Model Y that runs 200$ in our nano ceramic film, and that comes with a lifetime warranty.\n\nWant to get on the schedule for this?"}}
-        answer: on_the_fence
+        answer: closing_statements
         reason: on the fence, waiting on someone else
 
     Ex 41:
@@ -248,8 +250,8 @@ def route_exs() -> str:
 
     Ex 45:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"ok sounds good"},"message_history":{"user_message_0":{"user_media":{},"user_text":"do yall have a waiting area"},"agent_response_to_user_message_0":"Yeah we have a waiting area, or you can drop it off and come back when its done."}}
-        answer: on_the_fence
-        reason: a closing statement is on_the_fence, never off_topic
+        answer: closing_statements
+        reason: a closing statement is closing_statements, never off_topic
 
     Ex 46:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"Yes How much for tint on a 2020 camry"},"message_history":{}}
@@ -260,4 +262,49 @@ def route_exs() -> str:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"ill book once my car gets here next week"},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for tint on a 2024 civic"},"agent_response_to_user_message_0":"For your Civic we tint all the side windows and the rear windshield with our nano ceramic film for 299$, and that comes with a lifetime warranty.\n\nWant to get on the schedule for that ?"}}
         answer: booking
         reason: wants to book at a specific timing, when the car arrives next week
+
+    Ex 48:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"whats yall tiktok"},"message_history":{}}
+        answer: escalation
+        reason: the shop's social media is not in the shop's info, so only the owner can answer it
+
+    Ex 49:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"yall did my wrap last month and the corners are already lifting"},"message_history":{}}
+        answer: escalation
+        reason: a complaint about work the shop already did needs the owner himself
+
+    Ex 50:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"can yall tint the windows on my house, its a 2 story"},"message_history":{}}
+        answer: services_req_humans
+        reason: house tint is priced by the owner from pictures
+
+    Ex 51:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"how much for ppf on my motorcycle gas tank"},"message_history":{}}
+        answer: services_req_humans
+        reason: the shop has no set price for a motorcycle
+
+    Ex 52:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"how much to wrap my aftermarket vented hood"},"message_history":{}}
+        answer: services_req_humans
+        reason: a hood that is not the factory hood is a custom job
+
+    Ex 53:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"nah just the headlights and mirrors"},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for ppf on my 2023 tacoma"},"agent_response_to_user_message_0":"For your Tacoma the full frontal package runs 2200$, and that includes a free ceramic coating on the PPF areas and is backed by our 10 year warranty.\n\nWant to get on the schedule for this?"}}
+        answer: services_req_humans
+        reason: turned down the full package the shop offered for only certain panels
+
+    Ex 54:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"do yall do payment plans on wraps"},"message_history":{}}
+        answer: escalation
+        reason: financing and payment plans need the owner himself
+
+    Ex 55:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 03:40 PM","current_user_message":{"user_media":{},"user_text":"is my truck done yet? dropped it off this morning"},"message_history":{"user_message_0":{"user_media":{},"user_text":"yes lets do it"},"agent_response_to_user_message_0":"Bet, you can grab a spot here https://filthy-booking-website.vercel.app"}}
+        answer: escalation
+        reason: the status of a car already at the shop needs the owner himself
+
+    Ex 56:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"I want my money back, the ppf yall put on is already turning yellow"},"message_history":{}}
+        answer: escalation
+        reason: a refund needs the owner himself
 """

@@ -1,21 +1,18 @@
+from json import load
 from helpers.state_form import message_form, message_history_form
 from helpers.car_model_analyze import car_model_analyze
-from helpers.log import write, write_bs, has_id, RESTRICTED_KEY
+from helpers.log import write, write_bs, read_bs, has_id, RESTRICTED_KEY
 from src import mams as m
 from src.rage_functions import BOOKING_LINK
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
 from helpers import senders as send
 
-#FALLBACK REPLY
-FALLBACK_RESPONSE: str = "Got it, ill get right back to you real quick."
 
-#HILs
-HIL_RECIPENT: str = ""
-
+#core function that handles states and calls mams()
 def core(current_message_batch: list, id: str, channel: str) -> None:
-    #create the users message from message batch
+
+    #CREATE USER MESSAGE FROM MESSAGE BATCH
     try:
         user_message: dict = message_form(current_message_batch, channel)
 
@@ -31,55 +28,63 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
         user_message = message_form(text_batch, channel)
 
-    #analyzer user message for a car model and update state if exists 
+    #ANALYZE THE USER_MESSAGE FOR A CAR MODEL
     try:
-        car_model: str = car_model_analyze(user_message) 
+        book_state: dict = read_bs(f"{id}_bstate")
 
-        if(car_model != ""):
-            write_bs(f"{id}_bstate", {"car_model": car_model})
+        #only run the car model analyzer when no car model is saved yet
+        if(book_state.get("car_model", "") == ""):
+            car_model: str = car_model_analyze(user_message) 
 
-    #a failed car model call must not stop the message from being logged and answered
+            if(car_model != ""):
+                write_bs(f"{id}_bstate", {"car_model": car_model})
+
+    #a failed car model call must not stop the message from being answered
     except Exception as error:
         print("CAR MODEL ERROR: " + str(error))
 
-    #assemble the message history for state
-    message_history: dict = {}
 
+    #ASSEMBLE THE MESSAGE HISTORY
+    message_history: dict = {}
     try:
         message_history = message_history_form(id) 
 
-    #without history the message is still answered on its own
+    #without history message can stil be answered on its own
     except Exception as error:
         print("HISTORY ERROR: " + str(error))
 
-    #write the users message after history assembled
+
+    #WRITE USER_MESSAGE 
     try:
         write(f"{id}_usermsg", user_message)
 
     except Exception as error:
         print("WRITE ERROR: " + str(error))
 
-    #assemble the state
+    
+    #ASSEMBLE THE STATE
     shop_time: datetime = datetime.now(ZoneInfo("America/Chicago"))
 
     current_date_time: str = shop_time.strftime("%A, %B %d, %Y at %I:%M %p")
 
     state: dict = {"current_date_time": current_date_time, "current_user_message": user_message, "message_history": message_history}
 
-    #agents response
+
+    #RESPONSE OF "AGENT"
     agent_response: str = ""
 
     restricted: bool = False
 
-    ignored: bool = False
-
     try:
+
         #restricted customers are handled by a human, so the system does not respond to them
         restricted = has_id(RESTRICTED_KEY, id)
 
         if(restricted):
             print("RESTRICTED: " + id)
+
         else:
+
             #one retry so a timed out or busy model still gets a real reply out
             try:
                 agent_response = m.mams(state, id)
@@ -88,14 +93,6 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
                 print("MAMS ERROR, RETRYING: " + str(error))
 
                 agent_response = m.mams(state, id)
-
-            #routes the system ignores on purpose, like off topic, get no reply
-            if(agent_response == m.NO_RESPONSE):
-                print("IGNORED: " + id)
-
-                ignored = True
-
-                agent_response = ""
 
             #pricing and booking link states updated 
             if("$" in agent_response):
@@ -107,29 +104,16 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     except Exception as error:
         print("CORE ERROR: " + str(error))
 
-    #a customer who is not restricted or ignored always gets a reply, so anything that failed above falls back and loops in a human
-    if(not restricted and not ignored and (agent_response is None or agent_response.strip() == "")):
-        agent_response = FALLBACK_RESPONSE
+    
+    #SEND RESPONSE FOR PARICULAR CHANNEL 
+    if(agent_response != "" and not restricted): 
+        if(channel == "ig"):
+            send.send_ig_message(id, agent_response)
 
-        #first messages always open with the time of day greeting
-        if(message_history == {}):
-            greeting: str = "Good evening"
 
-            if(shop_time.hour < 12):
-                greeting = "Good morning"
-            elif(shop_time.hour < 17):
-                greeting = "Good afternoon"
 
-            agent_response = FALLBACK_RESPONSE.replace("Got it", greeting)
 
-        send.send_blooio_message(HIL_RECIPENT, f"HIL triggered on {channel} for user")
-        print("trigger hil")
-
-    #send response for the particular channel 
-    if(channel == "ig" and agent_response != ""):
-        send.send_ig_message(id, agent_response)
-
-    #write agent response to reddis w/ upstash
+    #WRITE AGENT RESPONSE 
     try:
         write(f"{id}_agentres", agent_response)
 

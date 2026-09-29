@@ -1,10 +1,12 @@
 from src import rage_functions as rf
 from helpers import log as lg
+from helpers import senders as send
+from dotenv import load_dotenv
+import os
 
-
-#NO RESPONSE
-NO_RESPONSE: str = "NO_RESPONSE"
-
+#HIL 
+load_dotenv() 
+HIL_RECIPENT: str = os.getenv("HIL_RECIPENT")
 
 #S_P BRANCH
 def service_and_pricing_branch(state: dict) -> str:
@@ -12,16 +14,13 @@ def service_and_pricing_branch(state: dict) -> str:
 
     s_and_p_reply: str = rf.service_and_pricing_generator(state, s_and_p_result)
 
-    #a failed check or regen still sends the first reply
     try:
         s_and_p_enforce: bool = rf.service_and_pricing_enforcer(f"AGENT_RESPONSE:\n{s_and_p_reply}")
 
         if(s_and_p_enforce):
             s_and_p_reply = rf.service_and_pricing_regen(state, s_and_p_result, s_and_p_reply)
-            print("REGEN\n\n")
             return s_and_p_reply
         else: 
-            print("FIRST TRY")
             return s_and_p_reply
 
     except Exception as error:
@@ -32,11 +31,12 @@ def service_and_pricing_branch(state: dict) -> str:
 
 #MAMS
 def mams(state: dict, id: str) -> str: 
+
     #customer is answering the picture request, so acknowledge it and hand them to a human
     if(lg.has_id(lg.HIL_QUEUE_KEY, id)):
         ack_reply: str = rf.acknowledge_service_gen(state)
 
-        print("trigger hil")
+        send.send_blooio_message(HIL_RECIPENT, "HIL TRIGERED, due to HUMAN NEEDED FOR SERVICE")
 
         lg.add_id(lg.RESTRICTED_KEY, id)
 
@@ -44,6 +44,7 @@ def mams(state: dict, id: str) -> str:
 
         return ack_reply
 
+    #ROUTE
     route_result: str = rf.route(state)
 
     #s_p branch
@@ -63,10 +64,8 @@ def mams(state: dict, id: str) -> str:
             if(business_ops_enforce):
                 business_ops_reply = rf.business_operations_regen(state, business_ops_result, business_ops_reply)
 
-                print("REGEN\n\n")
                 return business_ops_reply 
             else: 
-                print("FIRST TRY!\n\n")
                 return business_ops_reply
 
         except Exception as error:
@@ -96,10 +95,9 @@ def mams(state: dict, id: str) -> str:
                 if(booking_enforce):
                     booking_reply = rf.booking_regen(state, booking_details, booking_reply)
 
-                    print("REGEN\n\n")
                     return booking_reply
+
                 else:
-                    print("FIRST TRY!\n\n")
                     return booking_reply
 
             except Exception as error:
@@ -126,35 +124,48 @@ def mams(state: dict, id: str) -> str:
 
         return s_rh_reply
 
-    #owner_conversation branch
-    elif(route_result == "owner_conversation"):
-        #the owner picks up a conversation the system has no record of, so the system stays quiet
-        print("trigger hil")
+    #closing_statements branch
+    elif(route_result == "closing_statements"):
+        closing_reply: str = rf.closing_statements_gen(state)
 
-        return NO_RESPONSE
+        #a failed check or regen still sends the first reply
+        try:
+            closing_enforce: bool = rf.closing_statements_enforcer(state, closing_reply)
 
-    #on_the_fence branch
-    elif(route_result == "on_the_fence"):
-        fence_reply: str = rf.on_the_fence_gen(state)
+            if(closing_enforce):
+                closing_reply = rf.closing_statements_regen(state, closing_reply)
 
-        return fence_reply
+                return closing_reply
+            else:
+                return closing_reply
+
+        except Exception as error:
+            print("CLOSING CHECK ERROR: " + str(error))
+
+            return closing_reply
 
     #phone_call branch
     elif(route_result == "phone_call"):
         phone_reply: str = rf.phone_call_gen(state)
 
-        #the owner handles the call
-        print("trigger hil")
+        #trigger hil
+        send.send_blooio_message(HIL_RECIPENT, "HIL TRIGERED, due to PHONE CALL")
+        lg.add_id(lg.RESTRICTED_KEY, id)
 
         return phone_reply
 
-    #off_topic branch
-    elif(route_result == "off_topic"):
-        #spam and off topic messages get no reply
-        return NO_RESPONSE
+    elif(route_result == "escalation"):
+        esclation_reply: str = rf.escalation_gen(state)
 
-    #base case, a route with no branch gets core's fallback reply and a human looks at it
+        #trigger hil
+        send.send_blooio_message(HIL_RECIPENT, "HIL TRIGERED, due to ESCLATION")
+        lg.add_id(lg.RESTRICTED_KEY, id)
+
+        return esclation_reply
+
+    #covers off_topic and owner_convo
     else:
+        lg.add_id(lg.RESTRICTED_KEY, id)
         return ""
 
 

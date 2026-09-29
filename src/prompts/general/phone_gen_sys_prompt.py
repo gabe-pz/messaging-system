@@ -32,7 +32,6 @@ def phone_call_system_prompt() -> str:
     3. NEVER ask a question.
     4. NEVER mention prices, services, or the booking link.
     5. Keep it to one or two short sentences.
-    6. NEVER output the tokens <ESCALATE> or <OWNER_ASK>.
 """
 
     prompt += shared.business_context_note()

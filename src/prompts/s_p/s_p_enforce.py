@@ -6,6 +6,7 @@ def s_p_enforce() -> str:
     -The response is the agents response above. Check it against every rule below.
     -Answer True if the response breaks ANY rule below, even just one.
     -Answer False only if the response follows EVERY rule below. Nothing outside these rules is a reason to answer True.
+    -The customer reads the response exactly as written, so ANY text in angle brackets anywhere in it, like <OWNER_ASK> or <ESCALATE>, ALWAYS breaks a rule. If the response has any, answer True.
     -Only the response is judged. `current_user_message` and `message_history` are context for checking it: what the customer asked for, the vehicle they typed, prices the shop already quoted, and questions the shop already asked. `current_date_time` never changes the answer.
 
     #Context
@@ -23,7 +24,6 @@ def s_p_enforce() -> str:
         - the price depends on the vehicle (like vinyl wraps, PPF, or front windshield tint), the customer has not typed a vehicle, and the response asks for the year, make, and model instead
         - the response asks which tier, coverage, variant, or star count they want because that choice changes the price
         - the response asks which service they want because their message is too vague
-        - an <ESCALATE> response, or a response with the <OWNER_ASK> token
     2. The customer already typed their vehicle and the response asks for the make and model again instead of pricing for it.
     3. The price is the very first thing in the response, or comes after the closing question or statement. The price sits in the MIDDLE: after the opening information and before the closing question or statement.
     4. The response mentions tax, fees, or markups on top of a price. All prices are final.
@@ -49,7 +49,7 @@ def s_p_enforce() -> str:
     -The response also breaks a special pricing rule when:
     8. The response explains the difference between the tint tiers without saying that all three block 99% of UV rays and that the main difference is heat rejection: up to 91% for nano ceramic, up to 97% for nano ceramic plus, and up to 99% for NEX+ series ceramic, each with its main package price.
     9. The customer asks which tint tier to get and the response recommends anything other than nano ceramic plus, the most popular option.
-    10. The response gives any price for a motorcycle. It must say it will check on it and end with the <OWNER_ASK> token.
+    10. The response gives any price for a motorcycle.
     11. The response offers a military, veteran, or other discount. When the customer asks for any discount on window tint, the only allowed answer is that a tint special is already running and the best the shop can do is throw in a free windshield brow tint.
     12. The response changes the price because the customer brings their own material or kit. The price stays the same.
     13. The response offers to fix dents. That is for a body shop.
@@ -77,7 +77,7 @@ def s_p_enforce() -> str:
     8. The response lists the items included in a service (package contents, what is covered, what comes with it) inline in a sentence, separated by commas. Each item must be on its own line starting with "- ", like
         - item 1
         - item 2
-    9. The response has anything besides the message the customer should read, like a sentence about a draft, what was changed, which rule was applied, notes, or reasoning. The <ESCALATE> and <OWNER_ASK> tokens are fine.
+    9. The response has anything besides the message the customer should read, like a sentence about a draft, what was changed, which rule was applied, notes, or reasoning.
     10. The response is in a different language than the customer wrote in. A customer who wrote in Spanish gets a Spanish response.
     11. The response agrees to or confirms a specific day or time for the customer to come in, like "Friday works" or "see you Saturday", or puts a day or time in the booking question, like "Want me to get you on the books for Friday?". Stating the shop hours is fine.
 
@@ -101,25 +101,9 @@ def s_p_enforce() -> str:
     9. The response is longer than a shop owner would text, with filler sentences that add no new info.
     -These are human and are fine: casual words like "yessir", "for sure", "lol", or "whip", short sentences, a space before the final question mark, and exclamation marks.
 
-    #Escalation Rules To Enforce
-    -An escalation trigger is true when the customer in `current_user_message`:
-        - complains about previous work or a problem with what was done to their car
-        - asks for a refund
-        - asks about chrome delete
-        - asks about financing or payment plans
-        - describes their own custom design or graphics they want on their vehicle
-        - asks when their vehicle, already at the shop, will be ready. A general question about how long a service takes is NOT a trigger
-        - asks for window tint for their house
-    -The response breaks an escalation rule when:
-    1. The response is, or starts with, the token <ESCALATE> and no trigger is true.
-    2. A trigger is true and the response does not start with the token <ESCALATE>.
-    3. The response starts with <ESCALATE> and is anything more than the token on the first line followed by ONE sentence telling the customer the owner will take over.
-
-    #Owner Ask Token To Enforce
-    -The response breaks an owner ask rule when:
-    1. The response has the token <OWNER_ASK> and anything comes after the token. The token is always the very last thing in the response.
-    2. The response has the token <OWNER_ASK> and also asks any question, including the booking question.
-    3. The response offers to ask the owner, or asks the customer's permission to check on something, instead of stating that it will check on it and get right back to them.
+    #Hand Off Rules To Enforce
+    -The response breaks a hand off rule when:
+    1. The response says it will check on something and get back to them, offers to ask the owner, or says the owner will reach out or take over, instead of answering from the service details. Asking them to send pictures is fine.
 
     #Permitted Questions To Enforce
     -Every question in the response must be one of these four kinds:

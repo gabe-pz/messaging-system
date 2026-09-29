@@ -15,6 +15,7 @@ from src.prompts.business_ops import b_o_regen_sys_prompt as boRE
 
 from src.prompts.hil import s_rh_gen_sys_prompt as srhSP
 from src.prompts.hil import ack_gen_sys_prompt as ackSP
+from src.prompts.hil import escalation_gen_sys_prompt as escSP
 
 from src.prompts.booking import b_gen_sys_prompt as bgSP
 from src.prompts.booking import b_enforce as bE
@@ -22,7 +23,9 @@ from src.prompts.booking import b_regen_sys_prompt as bRE
 
 from src.prompts.car_model import car_model_int_sys_prompt as cmiSP
 
-from src.prompts.general import fence_gen_sys_prompt as fenceSP
+from src.prompts.general import closing_gen_sys_prompt as closingSP
+from src.prompts.general import closing_enforce as closingE
+from src.prompts.general import closing_regen_sys_prompt as closingRE
 from src.prompts.general import phone_gen_sys_prompt as phoneSP
 
 import os, requests, json
@@ -61,8 +64,9 @@ def route(state: dict) -> str:
             "booking": ri.booking_instructions(), 
             "business_operations": ri.business_operations_instructions(), 
             "services_req_humans": ri.services_req_humans_instructions(), 
+            "escalation": ri.escalation_instructions(), 
             "phone_call": ri.phone_call_instructions(), 
-            "on_the_fence": ri.on_the_fence_instructions(), 
+            "closing_statements": ri.closing_statements_instructions(), 
             "owner_conversation": ri.owner_conversation_instructions(), 
             "off_topic": ri.off_topic_instructions()
     }
@@ -430,6 +434,38 @@ def acknowledge_service_gen(state: dict) -> str:
     return reply
 
 
+# ESCALATION GENERATOR
+def escalation_gen(state: dict) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": escSP.escalation_system_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    user_text: str = f"STATE: {state_as_text}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "low"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 4000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
 # BOOKING GENERATOR
 def booking_generator(state: dict, booking_details: dict) -> str:
     #system prompt goes first and never changes, so it can be cached
@@ -563,10 +599,10 @@ def car_model_integrator_gen(state: dict) -> str:
     return reply
 
 
-# ON THE FENCE GENERATOR
-def on_the_fence_gen(state: dict) -> str:
+# CLOSING STATEMENTS GENERATOR
+def closing_statements_gen(state: dict) -> str:
     #system prompt goes first and never changes, so it can be cached
-    system_block: dict = {"type": "text", "text": fenceSP.on_the_fence_system_prompt(), "cache_control": {"type": "ephemeral"}}
+    system_block: dict = {"type": "text", "text": closingSP.closing_statements_system_prompt(), "cache_control": {"type": "ephemeral"}}
 
     system_message: dict = {"role": "system", "content": [system_block]}
 
@@ -583,6 +619,69 @@ def on_the_fence_gen(state: dict) -> str:
     reasoning_settings: dict = {"effort": "low"}
 
     payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 4000}
+
+    http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    reply: str = result["choices"][0]["message"]["content"]
+
+    return reply
+
+
+# CLOSING STATEMENTS ENFORCER
+def closing_statements_enforcer(state: dict, response: str) -> bool:
+    ENFORCE_CONFIDENCE_THRESHOLD: float = 0.65
+
+    enforce_question: dict = {"type": "noul", "instructions": f"Is the agents response currently going against any of the rules defined here\n{closingE.closing_enforce()}\n?"}
+
+    enforce_q: dict = {"enforce_A": enforce_question}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    #the checker needs the conversation to judge if a detail or price was made up
+    enforce_state: str = f"STATE: {state_as_text}\nAGENT_RESPONSE:\n{response}"
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    payload: dict = {"model": ROUTER_MODEL, "state": enforce_state, "questions": enforce_q}
+
+    http_response: requests.Response = requests.post(DECISIONS_URL, headers=headers, json=payload, timeout=10)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    probability_yes: float = result["answers"]["enforce_A"]["noul"]
+
+    if(probability_yes > ENFORCE_CONFIDENCE_THRESHOLD):
+        return True
+    else:
+        return False
+
+
+# CLOSING STATEMENTS REGEN
+def closing_statements_regen(state: dict, response: str) -> str:
+    #system prompt goes first and never changes, so it can be cached
+    system_block: dict = {"type": "text", "text": closingRE.closing_statements_regen_sys_prompt(), "cache_control": {"type": "ephemeral"}}
+
+    system_message: dict = {"role": "system", "content": [system_block]}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    user_text: str = f"STATE: {state_as_text}\n FLAGGED_RESPONSE: {response}"
+
+    user_message: dict = {"role": "user", "content": user_text}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    provider_settings: dict = {"order": ["z-ai"], "allow_fallbacks": True}
+
+    reasoning_settings: dict = {"effort": "medium"}
+
+    payload: dict = {"model": GENERATOR_MODEL, "messages": [system_message, user_message], "provider": provider_settings, "reasoning": reasoning_settings, "max_tokens": 8000}
 
     http_response: requests.Response = requests.post(GENERATORS_URL, headers=headers, json=payload, timeout=60)
 

@@ -34,14 +34,11 @@ def b_o_generator_sys_prompt() -> str:
     4. Notes inside a value, like "(DONT MENTION UNLESS ASKED)", are instructions for you. Follow them and never copy them into the reply.
     5. For any question about being open ("today", "tomorrow", "right now", "this weekend"), check current_date_time against the hours and answer for that exact day and time. If the shop is closed then, say so and give the next time it is open.
     6. When asked where the shop is, give EVERY location, each on its own line.
-    7. If the customer asks for something that is not in BUSINESS_DETAILS or #Business Context, follow the #Checking Protocol below. Never guess.
+    7. If the customer asks for something that is not in BUSINESS_DETAILS or #Business Context, never guess. Give a detail you do have if it helps, otherwise say you are not sure on that one.
+    8. NEVER say you will check on something, NEVER say the owner will reach out or take over, and NEVER offer to ask the owner.
 """
 
     prompt += shared.business_context_note()
-
-    prompt += shared.escalation_rules_section()
-
-    prompt += shared.owner_ask_protocol_section()
 
     prompt += shared.output_style_rules_section()
 
@@ -141,9 +138,9 @@ def b_o_generator_sys_prompt() -> str:
 
     Ex 13:
     BUSINESS_DETAILS:
-    STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"whats yall tiktok"},"message_history":{}}
-    Response: "Let me double check on that real quick and ill get right back to you. <OWNER_ASK>"
-    REASON: social media is not in BUSINESS_DETAILS or #Business Context, so check instead of guessing.
+    STATE: {"current_date_time":"Monday, June 08, 2026 at 02:30 PM","current_user_message":{"user_media":{},"user_text":"do yall have wifi in the waiting area"},"message_history":{}}
+    Response: "Good afternoon, we've got a waiting area, but I'm not sure on the wifi."
+    REASON: wifi is not in BUSINESS_DETAILS or #Business Context, so give the detail you do have, never guess, and never say you will check on it.
 
     Ex 14:
     BUSINESS_DETAILS:
