@@ -1,6 +1,6 @@
 # SHARED NOTE
 def _context_note() -> str:
-    return r"""Read `message_history` only to resolve a short follow up ("cool, and the address?", "what about email?") to what is being asked now. A field mentioned only to rule it out ("I don't need the phone") does NOT count. `current_date_time` never changes the answer."""
+    return r"""Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("cool, and the address?", "what about email?", "and on sunday?") asks about whatever the earlier turns point it at. A field asked about only in earlier turns does NOT count once the current message moves on to a different one. A field mentioned only to rule it out ("I don't need the phone") does NOT count. `current_date_time` never changes the answer."""
 
 
 # HOURS OF OPERATIONS (b1)

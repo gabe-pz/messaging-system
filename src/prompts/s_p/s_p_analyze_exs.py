@@ -2,7 +2,7 @@
 def window_tint_exs() -> str:
     return r"""Yes: film on the vehicle's glass. Side windows, rear glass, front windshield, windshield brow, sunroof, shade or percentage, heat or UV rejection, price, removal, warranty, or booking a tint. "ceramic" with no mention of coating or paint means ceramic window tint. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: ceramic COATING or paint correction, PPF on the windshield, any other service, or a message that names no service ("can I book an appointment", "how much for my 2007 Tahoe").
-Read `message_history` only to resolve a short follow up ("how much for front", "yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("how much for front", "yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"how dark can you go?"},"message_history":{"user_message_0":{"user_media":{},"user_text":"do you guys do windows?"},"agent_response_to_user_message_0":"We do! We install ceramic window tint on all vehicles."}}
 answer: True
@@ -34,7 +34,7 @@ answer: True"""
 def ppf_exs() -> str:
     return r"""Yes: clear PPF on the painted body. Any "PPF" or "paint protection film" with no color or windshield qualifier, "clear bra", "clear ppf", full body, full front, frontal, hood, or bumper protection, or a follow up about a PPF quote. The word "front" does NOT mean the windshield. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: colored or color change PPF, PPF or film on the windshield glass, window tint (a "bra" or "brow" on the front windshield during a tint conversation is tint), any other service, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("I got a cheaper quote", "yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("I got a cheaper quote", "yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{"media_element_0":{"media_description(if applicable)":"","post_description(if applicable)":"Houston’s Trusted PPF Shop 🛡️\n\n150+ ⭐️ 5-Star Reviews and counting!\n\nProtect your paint from rock chips, scratches & everyday damage with premium Paint Protection Film (PPF).\n\n📍 Serving Houston & Cypress\n• PPF | Ceramic Window Tint | Vinyl Wraps\n• Message us today for your FREE quote!\n\nProtect it. Preserve it. Filthy Wraps.\n#filthywraps #ppf #tint #houston #wrap"}},"user_text":"Can I get some info? "},"message_history":{}}
 answer: True
@@ -60,7 +60,7 @@ answer: True"""
 def starlight_exs() -> str:
     return r"""Yes: fiber optic stars in the vehicle's ceiling. "starlight", "stars in the roof", "Rolls Royce ceiling", "galaxy roof", "fiber optic headliner", shooting stars, a star count ("1200 stars"), ambient lighting, or a follow up about a starlight quote. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: any other service, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("how many would look good", "yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("how many would look good", "yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"I want that Rolls Royce style ceiling with the stars"},"message_history":{}}
 answer: True
@@ -80,7 +80,7 @@ answer: False"""
 def vinyl_wrap_exs() -> str:
     return r"""Yes: vinyl film that changes the color or look of the vehicle's body. "wrap my car", "vinyl wrap", "color change", matte, satin, gloss, or chrome wrap, chrome film, a hood, roof, or partial wrap, door jams, or a follow up about a wrap quote. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: PPF of any kind (clear, colored, or windshield), caliper wraps, window tint, chrome delete, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("but on the hood only", "yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("but on the hood only", "yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"How much for a full matte black wrap on a Model 3?"},"message_history":{}}
 answer: True
@@ -106,7 +106,7 @@ answer: False"""
 def colored_ppf_exs() -> str:
     return r"""Yes: ONLY when the customer explicitly asks for colored PPF or color change PPF, like "colored ppf", "color change ppf", "colored clear bra", or PPF that changes the vehicle's color. Also a follow up about a colored PPF quote. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: bare "PPF" or "paint protection film" with no color qualifier (that is clear PPF), PPF on the windshield, a vinyl wrap color change, any other service, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"Do yall install colored PPF?"},"message_history":{}}
 answer: True
@@ -126,7 +126,7 @@ answer: False"""
 def ceramic_coating_exs() -> str:
     return r"""Yes: a coating or correction on the vehicle's PAINT. "ceramic coating", "coat my car", paint correction, polishing, swirl or scratch removal from the paint, hydrophobic, 1 step or 2 step, ceramic on the rims, "ceramic the whole car" or "ceramic the whole suv", or a follow up about a coating quote. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: "ceramic" or "nano ceramic" with no mention of coating, paint, or the whole body (that is ceramic window tint), the free ceramic coating that comes with a wrap or PPF when the customer only asks about that service, any other service, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"do you do ceramic coating?"},"message_history":{}}
 answer: True
@@ -150,7 +150,7 @@ answer: False"""
 def caliper_wrap_exs() -> str:
     return r"""Yes: changing the color of the brake calipers. "caliper wrap", "caliber wrap", "wrap my brakes", "color my calipers", brake covers, Brembo calipers, or a follow up about a caliper quote. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: a vinyl wrap on the body, ceramic coating on the rims, any other service, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"how much to wrap my calipers red"},"message_history":{}}
 answer: True
@@ -168,7 +168,7 @@ answer: False"""
 def windshield_ppf_exs() -> str:
     return r"""Yes: ONLY when the customer explicitly asks for PPF or protective film on the windshield GLASS. "windshield ppf", "ppf on my windshield", "protect my windshield from rock chips", "film so my windshield doesnt crack", or a follow up about a windshield PPF quote. Also Yes when the customer asks what services the shop offers in general, like "what are all the services you offer".
 No: tinting the windshield, a "bra" or "brow" on the front windshield during a tint conversation (that is tint), bare "PPF" or PPF on the "front" of the car (that is clear PPF on the paint), any other service, or a message that names no service.
-Read `message_history` only to resolve a short follow up ("yeah lets do it") to the service already being discussed. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
+Read `current_user_message` in light of `message_history`, never on its own: a short or vague follow up ("yeah lets do it", "that one") refers to the service already being discussed. A service discussed only in earlier turns does NOT count once the current message clearly moves on to a different one. Media in `current_user_message.user_media` counts when the customer's text points at it ("info on this"). `current_date_time` never changes the answer.
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"Can you put PPF on my windshield?"},"message_history":{}}
 answer: True

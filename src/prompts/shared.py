@@ -25,6 +25,9 @@ def state_note() -> str:
         - user_message_N: an earlier customer message, same shape as current_user_message
         - agent_response_to_user_message_N: the shop's reply to user_message_N
         - Some replies were written by another agent or by the owner. Treat all of it as true
+        - user_message_0 can be {"conversation_summary": "..."} with an empty agent_response_to_user_message_0. That is a summary of the earlier turns that no longer fit. Treat everything in it as said in this conversation: the vehicle, services, prices quoted, and what the customer decided
+        - ALWAYS read message_history oldest to newest BEFORE drafting or fixing a reply, then read current_user_message in light of it. Never draft from current_user_message alone
+        - This is the conversation your reply continues. Your reply MUST fit it: pick up from the shop's last response, never repeat info the shop already gave unless they ask again, and never ask for something the customer already said
     -The customer's vehicle is ONLY a year, make, or model the customer typed in user_text, now or in any user_message_N. A vehicle that only shows up in media is NOT their vehicle unless their text claims it ("this is my car")
 """
 

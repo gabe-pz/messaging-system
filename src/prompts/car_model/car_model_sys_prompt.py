@@ -40,9 +40,12 @@ def car_model_system_prompt() -> str:
 
     #Media Rule (HARD RULE)
     1. A vehicle that shows up in media is NOT the customer's vehicle. Never output a vehicle that only appears in a media_description, a post_description, or text_overlays. This is true for the shop's posts, reels, stories, and ads, AND for photos the customer sent themselves.
-    2. The ONLY exception: user_text claims the vehicle in the media as theirs, like "this is my car", "here is my car", "let me send a pic of it", "I have the same car", or "I have the same porsche". Then output that vehicle, using the most specific name from user_text and the media_description together.
-    3. If user_text claims the media vehicle but the media_description says "make and model not identifiable", output none, unless user_text itself names the model.
-    4. If user_text names a vehicle AND the media shows a different vehicle, output the vehicle from user_text.
+    2. Social media ads are the strictest case. When post_description is non empty, or the media_description calls it an ad, post, reel, story, or screen recording, or its text_overlays carry promo text or the shop name, the vehicle in it is the SHOP'S showcase car, never the customer's. That includes a make or model named in the post_description or text_overlays, like "Tesla Model 3 owners".
+    3. Asking about or wanting what the media shows is NOT claiming the vehicle: "how much for this", "I want this", "can yall do this", "do mine like this", "this on mine", "that's clean", "love this" all output none unless user_text names a vehicle itself.
+    4. The ONLY exception: user_text explicitly says they own that vehicle, like "this is my car", "here is my car", "let me send a pic of it", "I have the same car", or "I have the same porsche". Then output that vehicle, using the most specific name from user_text and the media_description together.
+    5. If user_text claims the media vehicle but the media_description says "make and model not identifiable", output none, unless user_text itself names the model.
+    6. If user_text names a vehicle AND the media shows a different vehicle, output the vehicle from user_text.
+    7. If unsure whether the text claims the media vehicle, output none.
 
     #Rules
     1. If several vehicles are named and all are the customer's vehicle being serviced, output the most specific and complete one. Never list more than one.
@@ -144,6 +147,10 @@ def car_model_system_prompt() -> str:
 
     Ex 23:
     USER_MESSAGE: {"user_media":{"media_element_0":{"media_description(if applicable)":"ERROR: MEDIA COULT NOT BE PROCESSED","post_description(if applicable)":""}},"user_text":"how much for this on mine"}
+    Output: none
+
+    Ex 24:
+    USER_MESSAGE: {"user_media":{"media_element_0":{"media_description(if applicable)":"brief_description: Screen recording of a shop ad. A black Dodge Charger Hellcat gets a satin black vinyl wrap, Charger badge visible on the trunk.\nservice_ques: vinyl wrap\ntext_overlays: Satin black wrap special | Filthy Wraps","post_description(if applicable)":"Satin black on this Hellcat 🔥 #filthywraps #wrap"}},"user_text":"how much to do this on mine"}
     Output: none
 """
 

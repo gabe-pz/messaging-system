@@ -72,7 +72,7 @@ def route(state: dict) -> str:
     }
 
     #define the instructions for routing and the main question 
-    route_instructions: str = "Which category does the customers current message belong to? Use the message history ONLY for context."
+    route_instructions: str = "Which category does the customers current message belong to? Read the message history first and interpret the current message in light of it (short replies like 'yes' or 'that one' continue the prior topic); classify the current message, using the history for context."
     route_question: dict = {"type": "choice", "instructions": route_instructions+"\n"+re.route_exs(), "criteria": route_criteria}
 
     #setup the request
@@ -173,14 +173,20 @@ def service_and_pricing_generator(state: dict, service_details: list) -> str:
     return reply
 
 #enforcment function for service and pricing
-def service_and_pricing_enforcer(response: str) -> bool:
+def service_and_pricing_enforcer(state: dict, response: str) -> bool:
     ENFORCE_CONFIDENCE_THREASHOLD: float = 0.65 
 
     enforce_question: dict = {"type": "noul", "instructions": f"Is the agents response currenty going against any of the rules defined here\n{spE.s_p_enforce()}\n?"}
     enforce_q: dict = {"enforce_A": enforce_question}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    #the checker needs the conversation to catch repeats, re-asks, and the ad car
+    enforce_state: str = f"STATE: {state_as_text}\nAGENT_RESPONSE:\n{response}"
+
     #prepare request
     headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
-    payload: dict = {"model": ROUTER_MODEL, "state": response, "questions": enforce_q}
+    payload: dict = {"model": ROUTER_MODEL, "state": enforce_state, "questions": enforce_q}
 
     #send request
     response = requests.post(DECISIONS_URL, headers=headers, json=payload, timeout=10)
@@ -312,14 +318,20 @@ def business_operations_generator(state: dict, business_details: list) -> str:
     return reply
 
 #enforcment functions for business operations
-def business_operations_enforcer(response: str) -> bool:
+def business_operations_enforcer(state: dict, response: str) -> bool:
     ENFORCE_CONFIDENCE_THREASHOLD: float = 0.65 
 
     enforce_question: dict = {"type": "noul", "instructions": f"Is the agents response currenty going against any of the rules defined here\n{boE.b_o_enforce()}\n?"}
     enforce_q: dict = {"enforce_A": enforce_question}
+
+    state_as_text: str = json.dumps(state, ensure_ascii=False, separators=(",", ":"))
+
+    #the checker needs the conversation to catch repeats and re-asks
+    enforce_state: str = f"STATE: {state_as_text}\nAGENT_RESPONSE:\n{response}"
+
     #prepare request
     headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
-    payload: dict = {"model": ROUTER_MODEL, "state": response, "questions": enforce_q}
+    payload: dict = {"model": ROUTER_MODEL, "state": enforce_state, "questions": enforce_q}
 
     #send request
     http_response = requests.post(DECISIONS_URL, headers=headers, json=payload, timeout=10)

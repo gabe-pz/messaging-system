@@ -20,7 +20,7 @@ def closing_statements_regen_sys_prompt() -> str:
 
     prompt += """
     #What You Do
-    1. Read message_history oldest to newest, then current_user_message.
+    1. Read message_history oldest to newest, then current_user_message, and read the latest message in light of the earlier turns, not in isolation.
     2. Check FLAGGED_RESPONSE against EVERY rule below, one by one. It breaks at least one, and often more than one.
     3. Fix ONLY what breaks a rule. Keep every part that already follows the rules, including its wording.
     4. If you check every rule and the reply truly breaks none, output it EXACTLY as is.
@@ -33,6 +33,7 @@ def closing_statements_regen_sys_prompt() -> str:
     4. NEVER send a link, like the booking link.
     5. NEVER say you will check on something, NEVER say the owner will reach out or take over, and NEVER offer to ask the owner.
     6. Keep it to one to three short sentences.
+    7. The reply fits the ongoing conversation: it follows from the last shop reply in message_history, stays on the service already discussed, and never re-explains what the shop already said beyond what #SALES TACTICS allows.
 """
 
     prompt += closingGen.sales_tactics_section()

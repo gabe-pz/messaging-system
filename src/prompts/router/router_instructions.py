@@ -6,7 +6,8 @@ def service_and_prices_instructions() -> str:
     - any service the shop offers (window tint, vinyl wrap, clear PPF, colored PPF, windshield PPF, ceramic coating, paint correction, caliper wraps, starlight headliner), including its price, a quote, an estimate, specs, coverage, shades, star counts, warranty, turnaround time, or how long the job takes
     - any vague request for a price or a start, like "how much", "can I get an estimate", "get started", or a booking request that names no service yet, like "can I book an appointment" or "can I get on the schedule"
     - media from the shop about a service, like "how much is this" or "info on this" with a post, reel, story, or ad attached, even if the text also asks where the shop is
-    - the customer giving their vehicle because the shop's last response asked for it to price a service
+    - the customer giving their vehicle because the shop's last response in `message_history` asked for it to price a service
+    - a short follow up that only makes sense with `message_history`, like "what about the windshield", "how much for that one", or "same for my other car", when the shop was just discussing a service
     - the customer changing the job (a different service, quantity, or vehicle), even while saying yes to booking
     - a hood only wrap or tint removal, those are priced services
     - NOT a roof wrap, a partial wrap that is not the hood, a chrome delete, house tint, a motorcycle, or any other custom job, those are services_req_humans
@@ -19,7 +20,7 @@ def booking_instructions() -> str:
     - the shop's last response in `message_history` asked if they want to get booked or on the schedule, and the customer answers yes in any form ("yes", "yeah lets do it", "ok book me", "sure"). This wins even when the same message also asks a side question that does not change the job, like a discount, a waiting area, or where the shop is
     - the customer says they want to book at a specific time, like "this week", "Friday", or "any spots today at the shepherd location"
     - the customer asks if they need an appointment or can walk in
-    - the customer gives their vehicle because the shop's last response said it needs it before getting them on the books
+    - the customer gives their vehicle because the shop's last response in `message_history` said it needs it before getting them on the books
     - the customer gives booking details the shop asked for
     """
 
@@ -65,7 +66,7 @@ def closing_statements_instructions() -> str:
     return """
     The customer is on the fence, or is just ending the conversation. That covers:
     - hesitation or uncertainty, like "let me think about it", "not sure yet", or "its for my brother in law, let me see what he says"
-    - a closing statement with no request, like "thanks will do", "ok sounds good", "sounds great thanks", or "alright lets do it" when the shop's last response did NOT ask them to book
+    - a closing statement with no request, like "thanks will do", "ok sounds good", "sounds great thanks", or "alright lets do it" when the shop's last response in `message_history` did NOT ask them to book
     - saying they want to book at some vague time in the future with no specific timing, like "ill look into making an appointment soon". A specific timing, like "this week", "a week from now", or "when my car arrives", is booking
     - it MUST have NO service content and NO actionable request, and it is a STATEMENT, not a question
     - a closing statement is always closing_statements, NEVER off_topic

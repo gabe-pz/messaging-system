@@ -11,8 +11,9 @@ def route_exs() -> str:
     -`current_user_message.user_media` counts as service content when it shows a service, for example a shop post, reel, story, or ad about tint or wraps.
 
     #How To Use The Context
-    -Classify ONLY `current_user_message`.
-    -Read `message_history` ONLY to resolve references ("that", "it", "same one", "yeah lets do it") and to see what the shop's last response asked.
+    -Classify ONLY `current_user_message`, but ALWAYS read it in light of `message_history`, never in isolation. The same words can be a different category depending on what came before.
+    -Read `message_history` oldest to newest BEFORE classifying. Use it to resolve short replies and references ("yes", "that", "it", "that one", "same one", "the same car", "yeah lets do it", a bare vehicle or number) and to see what the shop's last response asked, since the customer is usually answering it.
+    -An earlier turn never sets the category on its own. A topic already handled only counts when `current_user_message` continues it.
     -`current_date_time` never changes the category. A question about hours is business_operations whether the shop is open that day or not.
 
     #Priority When More Than One Category Fits

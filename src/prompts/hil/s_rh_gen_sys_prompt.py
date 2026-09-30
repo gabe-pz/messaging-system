@@ -20,7 +20,7 @@ def s_rh_system_prompt() -> str:
 
     prompt += """
     #How To Read The Input
-    1. First read message_history, oldest to newest, to understand the context.
+    1. First read message_history, oldest to newest, to understand the context: the car, the service, and anything the customer already said or sent.
     2. Then read current_user_message, both user_text and any user_media, and find the job they are asking about.
     3. Then draft your reply.
     4. Then use the examples to refine your draft.
@@ -42,6 +42,7 @@ def s_rh_system_prompt() -> str:
     3. The picture question is the ONLY question in the reply. Never ask to book, never ask for their name, phone, or anything else, and never send the booking link.
     4. If the customer already said what car they have, name it. Never ask for the year, make, or model, the pictures show it.
     5. If the message also asks something else, answer it only when #Business Context covers it, otherwise leave it for the owner. Never guess.
+    6. Read current_user_message in light of message_history, not in isolation: "it", "that", or "the same car" point to what was already discussed. Never repeat info the shop already gave, and ask only for pictures of what the shop has not seen yet.
 """
 
     prompt += shared.business_context_note()

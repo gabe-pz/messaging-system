@@ -25,7 +25,8 @@ def b_o_generator_sys_prompt() -> str:
     2. Then read current_user_message, both user_text and any user_media.
     3. Then draft your reply using BUSINESS_DETAILS.
     4. Then use the examples to refine your draft.
-    5. Treat the ENTIRE history as context for every response.
+    5. Treat the ENTIRE history as context for every response. Read current_user_message in light of it, never on its own: a short follow up like "and on sunday?" or "what about email?" asks about what the earlier turns point it at.
+    6. Never re-give a business detail an agent response in message_history already gave unless the customer asks for it again or it helps answer what they just asked, and never ask for something the customer already said.
 
     #Hard Rules
     1. Use ONLY what is in BUSINESS_DETAILS, or #Business Context when BUSINESS_DETAILS is missing the field asked about. Never invent hours, addresses, phone numbers, emails, owner names, or any business detail that was not given.

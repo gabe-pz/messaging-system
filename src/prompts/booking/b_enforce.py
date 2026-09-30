@@ -11,6 +11,7 @@ def b_enforce() -> str:
     #Context
     -BOOKING_DETAILS.booking_link is the only real booking link. BOOKING_DETAILS.booking_link_sent is true when the link was already sent earlier (REFERENCE mode) and false when it was not (SEND mode).
     -`current_user_message.user_text` is what the customer just sent. `message_history` holds the earlier turns, oldest first: user_message_N is an earlier customer message and agent_response_to_user_message_N is the shop's reply to it.
+    -Read `current_user_message` in light of `message_history`, never on its own: a short "yes", "lets do it", or "does 12 work" is answering what the shop's last reply said or asked.
 
     #Booking Link Rules To Enforce
     -The response breaks a booking link rule when:
@@ -44,6 +45,7 @@ def b_enforce() -> str:
     6. The response asks the customer to book or get on the schedule when an agent response in `message_history` already asked that.
     7. The response has anything besides the message the customer should read, like notes, reasoning, or which rule was applied.
     8. The response is in a different language than the customer wrote in.
+    9. The response ignores the conversation: it asks the customer for something they already gave in `current_user_message` or `message_history`, like their car or the service being booked, or it responds to an earlier customer message instead of what they just sent.
 
     #Sounds Human To Enforce
     -The response breaks a human sounding rule when:

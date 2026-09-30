@@ -15,7 +15,7 @@ def service_and_pricing_branch(state: dict) -> str:
     s_and_p_reply: str = rf.service_and_pricing_generator(state, s_and_p_result)
 
     try:
-        s_and_p_enforce: bool = rf.service_and_pricing_enforcer(f"AGENT_RESPONSE:\n{s_and_p_reply}")
+        s_and_p_enforce: bool = rf.service_and_pricing_enforcer(state, s_and_p_reply)
 
         if(s_and_p_enforce):
             s_and_p_reply = rf.service_and_pricing_regen(state, s_and_p_result, s_and_p_reply)
@@ -59,7 +59,7 @@ def mams(state: dict, id: str) -> str:
 
         #a failed check or regen still sends the first reply
         try:
-            business_ops_enforce: bool = rf.business_operations_enforcer(business_ops_reply)
+            business_ops_enforce: bool = rf.business_operations_enforcer(state, business_ops_reply)
 
             if(business_ops_enforce):
                 business_ops_reply = rf.business_operations_regen(state, business_ops_result, business_ops_reply)

@@ -6,7 +6,7 @@ def closing_enforce() -> str:
     -Answer True if the response breaks ANY rule below, even just one.
     -Answer False only if the response follows EVERY rule below. Nothing outside these rules is a reason to answer True.
     -The customer reads the response exactly as written, so ANY text in angle brackets anywhere in it, like <OWNER_ASK> or <ESCALATE>, ALWAYS breaks a rule. If the response has any, answer True.
-    -Only the response is judged. STATE is context for checking it: what the customer just said and what the shop already said in `message_history`.
+    -Only the response is judged. STATE is context for checking it: what the customer just said and what the shop already said in `message_history`. Read `message_history` before judging, so the response is checked against the whole conversation, not just the latest message.
 
     #Context
     -The customer is on the fence about a service, or is just ending the conversation. The response is a short, friendly close.
@@ -22,6 +22,7 @@ def closing_enforce() -> str:
     6. The response says it will check on something, offers to ask the owner, or says the owner will reach out or take over.
     7. The customer is deciding for someone else, like a spouse or a brother in law, and the response tries to sell instead of just saying the shop will be happy to get them on the schedule.
     8. The service in `message_history` is NOT window tint, and the response mentions a special, a sale, or any deadline.
+    9. The response does not fit the ongoing conversation: it reads `current_user_message` in isolation instead of in light of `message_history`, like acting as if it were the first message, talking about a different service than the one already discussed, or ignoring something the customer already said, like who the service is for.
 
     #Sales Tactics That Are Fine
     -These are allowed when the customer is on the fence for themselves, at most two selling points in one reply:

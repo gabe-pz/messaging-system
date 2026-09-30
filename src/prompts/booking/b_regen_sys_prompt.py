@@ -51,6 +51,11 @@ def b_regenerator_sys_prompt() -> str:
     3. No military, veteran, or other discounts. For a discount on window tint, the only answer is that a tint special is already running and the best the shop can do is throw in a free windshield brow tint.
     4. NEVER say you will check on something, NEVER say the owner will reach out or take over, and NEVER offer to ask the owner.
 
+    #Conversation Rules
+    1. The reply must continue the conversation in message_history, not start fresh. Read current_user_message in light of the last agent response: a short "yes", "lets do it", or "does 12 work" is answering what the shop just said or asked.
+    2. If the reply asks for something the customer already gave, like their car or the service, or responds to an earlier message instead of what the customer just sent, fix it.
+    3. Never repeat info an agent response already gave unless it helps answer what the customer just said.
+
     #Output Rules
     1. Do NOT open with a fresh greeting or reintroduction ("Hey", "Hello", "this is Filthy Wraps") when message_history is non empty.
     2. Start with a capital letter.

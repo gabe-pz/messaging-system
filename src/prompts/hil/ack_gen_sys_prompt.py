@@ -17,6 +17,9 @@ def ack_system_prompt() -> str:
     prompt += shared.state_note()
 
     prompt += """
+    #Before You Write
+    1. Read message_history oldest to newest before drafting to see which pictures the shop asked for and for what job. Read the customer's message as the answer to that ask, like "here u go" means the pictures, so the line fits the conversation instead of treating their message in isolation.
+
     #Hard Rules
     1. Acknowledge what they sent. If user_media has pictures, thank them for the pictures. If they only sent text, acknowledge that instead.
     2. Say you will look it over and get right back to them.

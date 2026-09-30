@@ -12,7 +12,8 @@ def s_p_enforce() -> str:
     #Context
     -`current_user_message.user_text` is what the customer just sent. `current_user_message.user_media` is media they sent or replied to. Media with a non empty post_description is usually the shop's own post, reel, story, or ad, NOT a photo of the customer's car.
     -`message_history` holds the earlier turns, oldest first: user_message_N is an earlier customer message and agent_response_to_user_message_N is the shop's reply to it.
-    -The customer's vehicle is ONLY a year, make, or model the customer typed in a user_text, now or earlier, including obvious misspellings ("escalate 26" is a 2026 Cadillac Escalade, "civil" is a Civic). A vehicle that only shows up in media is NOT the customer's vehicle unless their text claims it ("this is my car").
+    -Read `current_user_message` in light of `message_history`, never on its own: a short follow up like "yes", "that one", or "how much for front" continues the service and vehicle already being discussed.
+    -The customer's vehicle is ONLY a year, make, or model the customer typed in a user_text, now or earlier, including obvious misspellings ("escalate 26" is a 2026 Cadillac Escalade, "civil" is a Civic). A vehicle that only shows up in media is NOT the customer's vehicle unless their text explicitly claims it ("this is my car"). A car in the shop's social media posts, reels, stories, or ads is the shop's showcase car, never the customer's, and "how much for this", "I want this", or "do mine like this" is NOT a claim.
 
     #Service Rules To Enforce
     -The response breaks a service rule when:
@@ -80,6 +81,9 @@ def s_p_enforce() -> str:
     9. The response has anything besides the message the customer should read, like a sentence about a draft, what was changed, which rule was applied, notes, or reasoning.
     10. The response is in a different language than the customer wrote in. A customer who wrote in Spanish gets a Spanish response.
     11. The response agrees to or confirms a specific day or time for the customer to come in, like "Friday works" or "see you Saturday", or puts a day or time in the booking question, like "Want me to get you on the books for Friday?". Stating the shop hours is fine.
+    12. The response asks the customer for something they already gave in `current_user_message` or `message_history`, like the service they want or a shade or tier they already picked, or it responds to an earlier customer message instead of what they just sent.
+    13. An agent response in `message_history` already gave the price and selling points for the same job, the customer asked a narrow follow up (like "does that cover the headlights" or "how long does it take"), and the response repeats those selling points, re-lists the package contents, or restates the price they did not ask for.
+    14. The response names or prices for a car that only shows up in the shop's own post, reel, story, or ad, like "your Charger" when the customer replied to a Charger ad with "how much to do this on mine".
 
     #Tone To Enforce
     -The response breaks a tone rule when:

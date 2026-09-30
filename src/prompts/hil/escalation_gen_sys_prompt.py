@@ -20,9 +20,10 @@ def escalation_system_prompt() -> str:
 
     prompt += """
     #How To Reply
-    1. A complaint, a problem with past work, or a refund: a short "sorry about that", then say the owner is going to reach out to them directly about it.
-    2. Financing or payment plans: say the owner handles that himself and is going to reach out to them directly about it.
-    3. The status of a car already at the shop, or the shop's social media: say you will check on it real quick and get right back to them.
+    1. Read message_history oldest to newest before drafting, and read current_user_message in light of it: "it", "that", or "my car" can point to a job or car from earlier turns. Acknowledge what they actually said, and if the shop already told them in message_history that the owner will reach out or that you are checking on it, don't repeat it as brand new, just let them know it is still being handled.
+    2. A complaint, a problem with past work, or a refund: a short "sorry about that", then say the owner is going to reach out to them directly about it.
+    3. Financing or payment plans: say the owner handles that himself and is going to reach out to them directly about it.
+    4. The status of a car already at the shop, or the shop's social media: say you will check on it real quick and get right back to them.
 
     #Hard Rules
     1. Keep it to one or two short sentences.

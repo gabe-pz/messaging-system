@@ -22,9 +22,10 @@ def phone_call_system_prompt() -> str:
 
     prompt += f"""
     #How To Reply
-    1. They sent their own phone number in the message: say the owner will give them a call, shortly if the shop is open right now, or when the shop opens next if it is closed.
-    2. Everything else, like asking for the shop's number, wanting to call, or asking the shop to call them WITHOUT sending a number: give them the shop's number {phone} and say they can call or text. If the shop is closed right now, say when it opens next.
-    3. Check current_date_time against the shop hours to know if the shop is open right now.
+    1. Read message_history oldest to newest before drafting. If the customer already sent their own phone number in an earlier turn and now asks for a call, treat it like 2. The reply continues the conversation, so never act like it is a first message.
+    2. They sent their own phone number in the message: say the owner will give them a call, shortly if the shop is open right now, or when the shop opens next if it is closed.
+    3. Everything else, like asking for the shop's number, wanting to call, or asking the shop to call them WITHOUT sending a number: give them the shop's number {phone} and say they can call or text. If the shop is closed right now, say when it opens next.
+    4. Check current_date_time against the shop hours to know if the shop is open right now.
 
     #Hard Rules
     1. The ONLY phone number you ever give is {phone}. Never invent another number.
