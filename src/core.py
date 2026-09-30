@@ -28,22 +28,6 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
         user_message = message_form(text_batch, channel)
 
-    #ANALYZE THE USER_MESSAGE FOR A CAR MODEL
-    try:
-        book_state: dict = read_bs(f"{id}_bstate")
-
-        #only run the car model analyzer when no car model is saved yet
-        if(book_state.get("car_model", "") == ""):
-            car_model: str = car_model_analyze(user_message) 
-
-            if(car_model != ""):
-                write_bs(f"{id}_bstate", {"car_model": car_model})
-
-    #a failed car model call must not stop the message from being answered
-    except Exception as error:
-        print("CAR MODEL ERROR: " + str(error))
-
-
     #ASSEMBLE THE MESSAGE HISTORY
     message_history: dict = {}
     try:
@@ -52,6 +36,21 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     #without history message can stil be answered on its own
     except Exception as error:
         print("HISTORY ERROR: " + str(error))
+
+
+    #ANALYZE THE USER_MESSAGE FOR A CAR MODEL
+    try:
+        book_state: dict = read_bs(f"{id}_bstate")
+
+        #runs every message with the history, so a car switch or a car finished over a few messages still gets saved
+        car_model: str = car_model_analyze(user_message, message_history) 
+
+        if(car_model != "" and car_model != book_state.get("car_model", "")):
+            write_bs(f"{id}_bstate", {"car_model": car_model})
+
+    #a failed car model call must not stop the message from being answered
+    except Exception as error:
+        print("CAR MODEL ERROR: " + str(error))
 
 
     #WRITE USER_MESSAGE 
@@ -94,6 +93,9 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
                 agent_response = m.mams(state, id)
 
+            #examples wrap replies in quotes, so a stray quote the model copies over is cut off
+            agent_response = agent_response.strip().strip('"')
+
             #pricing and booking link states updated 
             if("$" in agent_response):
                 write_bs(f"{id}_bstate", {"pricing_state": "SENT"}) 
@@ -109,6 +111,8 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     if(agent_response != "" and not restricted): 
         if(channel == "ig"):
             send.send_ig_message(id, agent_response)
+        elif(channel == "blooio"):
+            send.send_blooio_message(id, agent_response)
 
 
 

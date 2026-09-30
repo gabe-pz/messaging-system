@@ -175,13 +175,15 @@ answer: False"""
 
 # NAME OF PERSON TALKING TO (b11)
 def person_talking_to_exs() -> str:
-    return r"""Yes: who the customer is talking to right now. "who am I talking to", "who was I talking to", "what's your name".
+    return r"""Yes: who the customer is talking to right now, or if they are talking to a real person or a bot. "who am I talking to", "who was I talking to", "what's your name", "is this preston", "am i talking to a bot".
 No: who owns the shop, the name of the shop, or any other field.
 """ + _context_note() + r"""
 Examples:
 state: {"current_user_message":{"user_media":{},"user_text":"roger tha chief, thanks for the help, also who was I talking to so I can know who to talk to when I get there"},"message_history":{"user_message_0":{"user_media":{},"user_text":"Lets get me in this Friday"},"agent_response_to_user_message_0":"Bet, you can check out what we got open Friday and lock in a time here: https://filthy-booking-website.vercel.app"}}
 answer: True
 state: {"current_user_message":{"user_media":{},"user_text":"whats your name btw"},"message_history":{}}
+answer: True
+state: {"current_user_message":{"user_media":{},"user_text":"r u a bot lol"},"message_history":{}}
 answer: True
 state: {"current_user_message":{"user_media":{},"user_text":"Who's the owner of the shop?"},"message_history":{}}
 answer: False

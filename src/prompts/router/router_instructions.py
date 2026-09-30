@@ -8,7 +8,10 @@ def service_and_prices_instructions() -> str:
     - media from the shop about a service, like "how much is this" or "info on this" with a post, reel, story, or ad attached, even if the text also asks where the shop is
     - the customer giving their vehicle because the shop's last response in `message_history` asked for it to price a service
     - a short follow up that only makes sense with `message_history`, like "what about the windshield", "how much for that one", or "same for my other car", when the shop was just discussing a service
+    - the customer only giving their vehicle with no service yet, like "hey i got a 2019 camry", so the shop can ask what they want done
+    - a photo or video of the customer's own car with no text or vague text, like "can yall do this", "thoughts?", or "how much", so the shop can ask what they want done
     - the customer changing the job (a different service, quantity, or vehicle), even while saying yes to booking
+    - the customer telling the shop something new that adds or changes a priced part of the job, even while saying yes to booking, like old tint or film already on the windows that is peeling or has to come off (tint removal), or a sunroof on a starlight job
     - a hood only wrap or tint removal, those are priced services
     - NOT a roof wrap, a partial wrap that is not the hood, a chrome delete, house tint, a motorcycle, or any other custom job, those are services_req_humans
     - NOT a complaint about past work, a refund, financing, or a car already at the shop, those are escalation
@@ -17,7 +20,7 @@ def service_and_prices_instructions() -> str:
 def booking_instructions() -> str:
     return """
     The customer wants to book. That covers:
-    - the shop's last response in `message_history` asked if they want to get booked or on the schedule, and the customer answers yes in any form ("yes", "yeah lets do it", "ok book me", "sure"). This wins even when the same message also asks a side question that does not change the job, like a discount, a waiting area, or where the shop is
+    - the shop's last response in `message_history` asked if they want to get booked or on the schedule, and the customer answers yes in any form ("yes", "yeah lets do it", "ok book me", "sure"). This wins even when the same message also asks a side question that does not change the job, like a discount, a waiting area, or where the shop is. It does NOT win when the message also tells the shop something that changes the price, like old tint on the windows that has to come off, that is service_and_pricing
     - the customer says they want to book at a specific time, like "this week", "Friday", or "any spots today at the shepherd location"
     - the customer asks if they need an appointment or can walk in
     - the customer gives their vehicle because the shop's last response in `message_history` said it needs it before getting them on the books
@@ -26,7 +29,7 @@ def booking_instructions() -> str:
 
 def business_operations_instructions() -> str:
     return """
-    The customer is asking about the shop itself, not a service. That covers hours, open or closed status ("yall open today", "yall have time right now"), where the shop is located or its address, email, website, who owns the shop, who they are talking to, how long the shop has been in business, how many employees it has, whether it is licensed or registered, and which payment methods it accepts. NOT the phone number or a phone call, that is phone_call. NOT financing, payment plans, or the shop's social media, those are escalation.
+    The customer is asking about the shop itself, not a service. That covers hours, open or closed status ("yall open today", "yall have time right now", "can i swing by rn", "can i come thru today"), where the shop is located or its address, email, website, who owns the shop, who they are talking to or if they are talking to a real person or a bot ("is this preston", "am i talking to a bot", "r u a bot lol"), how long the shop has been in business, how many employees it has, whether it is licensed or registered, and which payment methods it accepts. It also covers a bare greeting with nothing else, like "hey", "hello", "yo", or "hola". NOT the phone number or a phone call, that is phone_call. NOT financing, payment plans, or the shop's social media, those are escalation.
     Only when the message has no service question, no service media from the shop, and no yes to a booking question.
     """
 
@@ -60,6 +63,7 @@ def owner_conversation_instructions() -> str:
     - AND the message is not clearly service_and_pricing, booking, business_operations, escalation, services_req_humans, closing_statements, or phone_call
     - AND the message reads like a follow up to a missing earlier conversation or an informal inbound, like "could I go on Saturday afternoon after 2" or "could you send me over the finance application"
     - `current_user_message.user_text` can hold several texts joined into ONE message: if ANY part clearly asks about a service, booking, hours, or location, classify THAT and never owner_conversation. A bare "Yes" or "Ok" next to a real question is filler, not a follow up to a missing conversation
+    - NEVER a bare greeting, a photo of their car, just their vehicle, asking to come by now or today, or asking who they are talking to or if they are talking to a bot. Those are business_operations or service_and_pricing
     """
 
 def closing_statements_instructions() -> str:

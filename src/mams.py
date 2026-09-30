@@ -29,6 +29,14 @@ def service_and_pricing_branch(state: dict) -> str:
         return s_and_p_reply
 
 
+#HIL ALERT
+#the owner needs to know who to reach out to and what they said
+def hil_alert(reason: str, id: str, state: dict) -> None:
+    user_text: str = state["current_user_message"]["user_text"]
+
+    send.send_blooio_message(HIL_RECIPENT, f"HIL TRIGERED, due to {reason}\nCUSTOMER: {id}\nMESSAGE: {user_text}")
+
+
 #MAMS
 def mams(state: dict, id: str) -> str: 
 
@@ -36,7 +44,7 @@ def mams(state: dict, id: str) -> str:
     if(lg.has_id(lg.HIL_QUEUE_KEY, id)):
         ack_reply: str = rf.acknowledge_service_gen(state)
 
-        send.send_blooio_message(HIL_RECIPENT, "HIL TRIGERED, due to HUMAN NEEDED FOR SERVICE")
+        hil_alert("HUMAN NEEDED FOR SERVICE", id, state)
 
         lg.add_id(lg.RESTRICTED_KEY, id)
 
@@ -149,7 +157,7 @@ def mams(state: dict, id: str) -> str:
         phone_reply: str = rf.phone_call_gen(state)
 
         #trigger hil
-        send.send_blooio_message(HIL_RECIPENT, "HIL TRIGERED, due to PHONE CALL")
+        hil_alert("PHONE CALL", id, state)
         lg.add_id(lg.RESTRICTED_KEY, id)
 
         return phone_reply
@@ -158,13 +166,18 @@ def mams(state: dict, id: str) -> str:
         esclation_reply: str = rf.escalation_gen(state)
 
         #trigger hil
-        send.send_blooio_message(HIL_RECIPENT, "HIL TRIGERED, due to ESCLATION")
+        hil_alert("ESCLATION", id, state)
         lg.add_id(lg.RESTRICTED_KEY, id)
 
         return esclation_reply
 
-    #covers off_topic and owner_convo
+    #off topic or spam is ignored, but the customer is not muted so their next real message still gets answered
+    elif(route_result == "off_topic"):
+        return ""
+
+    #covers owner_convo and general_text, a human takes over so the owner is told who it is
     else:
+        hil_alert(route_result.upper(), id, state)
         lg.add_id(lg.RESTRICTED_KEY, id)
         return ""
 

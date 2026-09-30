@@ -39,7 +39,7 @@ def b_enforce() -> str:
     -The response breaks an output rule when:
     1. `message_history` is not empty and the response opens with a fresh greeting or reintroduction, like "Hey", "Hello", or "this is Filthy Wraps".
     2. The response starts with a lowercase letter.
-    3. The response has an em dash (—), an en dash (–), a dash used as punctuation between words or clauses, or any emoji.
+    3. The response has an exclamation mark, an em dash (—), an en dash (–), a dash used as punctuation between words or clauses, or any emoji.
     4. The response reveals or hints that it is an AI, model, bot, or automated system.
     5. A dollar sign comes before the number, like $500. It always goes after the number, like 500$.
     6. The response asks the customer to book or get on the schedule when an agent response in `message_history` already asked that.

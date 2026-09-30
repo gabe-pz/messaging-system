@@ -8,7 +8,7 @@ def route_exs() -> str:
     -Signals of a service that needs the owner to see pictures: a roof wrap, a partial wrap that is not only the hood (doors, one side, bumpers, half the car, stripes), a chrome delete or blacking out trim, badges, or emblems, removing an old wrap or PPF, their own custom design, house tint, or a motorcycle. A factory hood only wrap and tint removal are NOT custom jobs, they are priced services.
     -Signals of an escalation that needs the owner himself: a complaint about work the shop already did, a refund, financing or payment plans, the status of a car already at the shop, or the shop's social media.
     -`current_user_message.user_text` is every text the customer sent in this batch joined into ONE message. If any part of it asks about a service, booking, hours, or location, classify that part. A bare "Yes" or "Ok" next to a real question is filler.
-    -`current_user_message.user_media` counts as service content when it shows a service, for example a shop post, reel, story, or ad about tint or wraps.
+    -`current_user_message.user_media` counts as service content when it shows a service, for example a shop post, reel, story, or ad about tint or wraps, or when it is a photo of the customer's own car.
 
     #How To Use The Context
     -Classify ONLY `current_user_message`, but ALWAYS read it in light of `message_history`, never in isolation. The same words can be a different category depending on what came before.
@@ -19,13 +19,13 @@ def route_exs() -> str:
     #Priority When More Than One Category Fits
     1. escalation: a complaint, a refund, financing, a car already at the shop, or the shop's social media, even when the message also says yes to booking or asks something else.
     2. services_req_humans: any service that needs the owner to see pictures, even when the message also says yes to booking or asks something else.
-    3. booking: the shop's last response asked if they want to get booked or on the schedule and the customer says yes, and the message does not change the job.
-    4. service_and_pricing: any service content, service media, or a change to the job.
+    3. booking: the shop's last response asked if they want to get booked or on the schedule and the customer says yes, and the message does not change the job or its price.
+    4. service_and_pricing: any service content, service media, or a change to the job, including new info that adds a priced part like old tint that has to come off, even when the message also says yes to booking.
     5. booking: every other booking signal.
     6. business_operations
     7. phone_call
     8. closing_statements
-    9. owner_conversation: only when message_history is empty
+    9. owner_conversation: only when message_history is empty, and never a bare greeting, a photo of their car, just their vehicle, asking to come by now, or asking if they are talking to a bot
     10. off_topic: only off topic or spam, never a closing statement
 
     #Examples (ground truth, mirror them)
@@ -308,4 +308,44 @@ def route_exs() -> str:
         state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"I want my money back, the ppf yall put on is already turning yellow"},"message_history":{}}
         answer: escalation
         reason: a refund needs the owner himself
+
+    Ex 57:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"hey"},"message_history":{}}
+        answer: business_operations
+        reason: a bare greeting, the shop greets them back and asks what they need, never owner_conversation
+
+    Ex 58:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{"media_element_0":{"media_description(if applicable)":"brief_description: Photo of a black Hyundai Sonata parked in a driveway, Hyundai badge visible on the trunk.\nservice_ques: none visible\ntext_overlays: none","post_description(if applicable)":""}},"user_text":""},"message_history":{}}
+        answer: service_and_pricing
+        reason: a photo of their own car, the shop asks what they want done on it
+
+    Ex 59:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{"media_element_0":{"media_description(if applicable)":"brief_description: Photo of a white Chevy Silverado pickup in a parking lot, Chevrolet badge visible on the grille.\nservice_ques: none visible\ntext_overlays: none","post_description(if applicable)":""}},"user_text":"can yall do this"},"message_history":{}}
+        answer: service_and_pricing
+        reason: a photo of their own car with vague text is a service question
+
+    Ex 60:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 04:55 PM","current_user_message":{"user_media":{},"user_text":"yo can i swing by rn"},"message_history":{}}
+        answer: business_operations
+        reason: asking to come by right now is an open status question
+
+    Ex 61:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"am i talking to a bot"},"message_history":{}}
+        answer: business_operations
+        reason: asking who they are talking to
+
+    Ex 62:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"r u a bot lol"},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much for tint on a 2016 camry"},"agent_response_to_user_message_0":"Good morning, for your Camry we tint all the side windows and the rear windshield with our nano ceramic film for 299$, and that comes with a lifetime warranty.\n\nWant to get on the schedule for that ?"}}
+        answer: business_operations
+        reason: asking who they are talking to, never off_topic
+
+    Ex 63:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"hey i got a 2019 camry"},"message_history":{}}
+        answer: service_and_pricing
+        reason: only gave their vehicle, the shop asks what service they want
+
+    Ex 64:
+        state: {"current_date_time":"Tuesday, September 08, 2026 at 11:15 AM","current_user_message":{"user_media":{},"user_text":"oh wait nvm its aftermarket tint not factory, its bubbling on the back glass. but yea book me"},"message_history":{"user_message_0":{"user_media":{},"user_text":"how much to tint my 2021 accord, it already has factory tint"},"agent_response_to_user_message_0":"Good morning, factory tint is in the glass itself so there is nothing to remove. For your Accord all the side windows and the rear windshield in our nano ceramic film runs 299$, and that comes with a lifetime warranty.\n\nWant to get on the schedule for that ?"}}
+        answer: service_and_pricing
+        reason: says yes to booking, but the old tint is a film that has to come off, which adds tint removal to the price, so it must be priced again first
 """

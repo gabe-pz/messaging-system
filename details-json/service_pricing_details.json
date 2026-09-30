@@ -5,6 +5,7 @@
         
         "light_count" : "Minimum is 500, No Max", 
         "pricing_per_light_count" : "cost is 1.70$ per star",
+        "star_price_examples" : "500 stars = 850$, 600 = 1020$, 800 = 1360$, 1000 = 1700$, 1200 = 2040$, 1500 = 2550$, 2000 = 3400$. Any other count is the stars times 1.70, then add the shooting stars and the sunroof on top. Ex: 1000 stars + 2 shooting stars = 1900$(NEVER MENTION THE PER STAR PRICE)",
 
         "shooting_star" : "cost 100$ per shooting star",
         "sun_roof_cost" : "extra 250$ if customer has sunroof",
@@ -42,7 +43,7 @@
     "s3" : {"service" : "Window Tint", "service_details" : {
         "overview" : {
             "description" : "Thin film applied to vehicle windows",
-            "legal_compliance" : "Yes legally compliant in state of Texas",
+            "legal_compliance" : "Texas law: the front side windows must be 25% or lighter, the rear side windows and back glass can be any shade including 5%. If the customer wants darker than 25% on the front side windows, tell them it is not street legal in Texas. NEVER promise they wont get a ticket",
             "tint_film_cutting_method" : "machine cut, ensures no scratches",
             "tint_%_range" : "5% limo tint all the way to 70% clear film(PRICING is same NO MATTER the percentage)",
             "brand_use" : "brand STEK(DONT MENTION UNLESS ASKED ABOUT)",
@@ -69,7 +70,7 @@
                 "heat_rejection" : "99%",
                 "material" : "graphene-based film, STEK NEX+ series(DONT MENTION UNLESS EXPLICITLY ASKED ABOUT)"
             },
-            "when_asked_difference_between_tiers" : "All three options block 99% of harmful UV rays. The main difference is how much heat they reject:\n\n- Nano Ceramic – 299$: Up to 91% heat rejection. A great entry-level ceramic option.\n- ⭐ Nano Ceramic Plus – 450$ (Most Popular): Up to 97% heat rejection. This is the option we recommend to most customers because it offers the best balance of performance and value.\n- NEX+ Series Ceramic – 600$: Up to 99% heat rejection. Our premium film for customers who want the highest level of heat rejection."
+            "when_asked_difference_between_tiers" : "All 3 block 99% of UV, the difference is how much heat they keep out. Nano ceramic is 299$ and rejects up to 91% of the heat. Nano ceramic plus is 450$ and rejects up to 97%, thats the one most customers go with and the one we recommend. NEX+ series ceramic is 600$ and rejects up to 99%, thats our top of the line film(PUT IT IN YOUR OWN WORDS)"
         },
 
         "pricing_main_package" : {

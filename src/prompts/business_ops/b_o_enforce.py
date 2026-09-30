@@ -38,11 +38,12 @@ def b_o_enforce() -> str:
     -The response breaks a business fact rule when:
     1. The response states an hour, day, address, phone number, email, website, owner name, number of employees, years in business, license detail, or payment detail that does not match #Correct Business Facts exactly. Writing a time range as "10AM to 5PM" instead of "10AM - 5PM" is fine.
     2. The response states a business fact that is not in #Correct Business Facts, like a social media handle, a license number, or a street that is not listed, instead of saying it is not sure on that one.
-    3. The response gives the shop location but leaves out one of the addresses. Every location must be given.
+    3. The customer asks where the shop is located in general and the response leaves out one of the addresses. When they ask about one specific location, giving just that one is fine.
     4. The response says the shop is mobile, or says it will come to the customer.
     5. The response copies a note in capital letters, like "(DONT MENTION UNLESS ASKED)", into the reply.
     6. The customer's message is given, and the response answers a field the customer did not ask about, like adding the address when they only asked about hours.
     7. The customer's message and `current_date_time` are given, and the response says the shop is open or closed at a time that does not match the hours for that day.
+    8. The response says the shop is open or closed on a holiday (Thanksgiving, Christmas, New Years, etc.). Holiday hours are not set, so it must say it is not sure on those.
 
     #Output Rules To Enforce
     -The response breaks an output rule when:

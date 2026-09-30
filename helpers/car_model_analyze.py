@@ -12,16 +12,17 @@ OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY")
 GENERATORS_URL: str = "https://openrouter.ai/api/v1/chat/completions"
 CAR_MODEL_MODEL: str = "z-ai/glm-5.3-flash"
 
-def car_model_analyze(user_message: dict) -> str:
+def car_model_analyze(user_message: dict, message_history: dict) -> str:
     #system prompt goes first and never changes, so it can be cached
     system_block: dict = {"type": "text", "text": cmSP.car_model_system_prompt(), "cache_control": {"type": "ephemeral"}}
     system_message: dict = {"role": "system", "content": [system_block]}
 
     #compact json with no extra spaces or escaped unicode
     user_message_as_text: str = json.dumps(user_message, ensure_ascii=False, separators=(",", ":"))
+    message_history_as_text: str = json.dumps(message_history, ensure_ascii=False, separators=(",", ":"))
 
     #create the text to pass
-    user_text: str = f"USER_MESSAGE: {user_message_as_text}"
+    user_text: str = f"MESSAGE_HISTORY: {message_history_as_text}\nUSER_MESSAGE: {user_message_as_text}"
     message: dict = {"role": "user", "content": user_text}
 
     #prepare the request
