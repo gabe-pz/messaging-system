@@ -38,12 +38,15 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
         print("HISTORY ERROR: " + str(error))
 
 
-    #ANALYZE THE USER_MESSAGE FOR A CAR MODEL
+    #ANALYZE THE USER_MESSAGE FOR A CAR MODEL 
     try:
         book_state: dict = read_bs(f"{id}_bstate")
 
         #runs every message with the history, so a car switch or a car finished over a few messages still gets saved
         car_model: str = car_model_analyze(user_message, message_history) 
+
+        print(f"CAR_MODEL: {car_model}")
+        print()
 
         if(car_model != "" and car_model != book_state.get("car_model", "")):
             write_bs(f"{id}_bstate", {"car_model": car_model})
@@ -114,8 +117,8 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
         elif(channel == "blooio"):
             send.send_blooio_message(id, agent_response)
 
-
-
+        print(f"AGENT SENT: {agent_response}")
+        print()
 
     #WRITE AGENT RESPONSE 
     try:
@@ -123,16 +126,4 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
     except Exception as error:
         print("WRITE ERROR: " + str(error))
-
-
-
-
-
-
-
-
-
-
-
-
 

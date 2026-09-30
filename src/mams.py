@@ -1,4 +1,5 @@
 from src import rage_functions as rf
+from helpers import username as un
 from helpers import log as lg
 from helpers import senders as send
 from dotenv import load_dotenv
@@ -12,10 +13,18 @@ HIL_RECIPENT: str = os.getenv("HIL_RECIPENT")
 def service_and_pricing_branch(state: dict) -> str:
     s_and_p_result: list = rf.service_and_pricing_analyzer(state) 
 
+    print("*"*25)
+    print(f"S_P Analyzer Result: {s_and_p_result}")
+    print()
+
     s_and_p_reply: str = rf.service_and_pricing_generator(state, s_and_p_result)
 
     try:
         s_and_p_enforce: bool = rf.service_and_pricing_enforcer(state, s_and_p_reply)
+
+        print("*"*25)
+        print(f"S_P Enforcer Result: {s_and_p_enforce}")
+        print()
 
         if(s_and_p_enforce):
             s_and_p_reply = rf.service_and_pricing_regen(state, s_and_p_result, s_and_p_reply)
@@ -30,11 +39,11 @@ def service_and_pricing_branch(state: dict) -> str:
 
 
 #HIL ALERT
-#the owner needs to know who to reach out to and what they said
 def hil_alert(reason: str, id: str, state: dict) -> None:
     user_text: str = state["current_user_message"]["user_text"]
+    user_name: str = un.username_ig(id) 
 
-    send.send_blooio_message(HIL_RECIPENT, f"HIL TRIGERED, due to {reason}\nCUSTOMER: {id}\nMESSAGE: {user_text}")
+    send.send_blooio_message(HIL_RECIPENT, f"HIL TRIGERED, due to {reason}\nCUSTOMER: {user_name}\nMESSAGE: {user_text}")
 
 
 #MAMS
@@ -55,6 +64,11 @@ def mams(state: dict, id: str) -> str:
     #ROUTE
     route_result: str = rf.route(state)
 
+    #logging
+    print("*"*25)
+    print(f"ROUTE RESULT: {route_result}")
+    print()
+
     #s_p branch
     if(route_result == "service_and_pricing"):
         return service_and_pricing_branch(state)
@@ -63,11 +77,19 @@ def mams(state: dict, id: str) -> str:
     elif(route_result == "business_operations"):
         business_ops_result: list = rf.business_operations_analyzer(state) 
 
-        business_ops_reply: str = rf.business_operations_generator(state, business_ops_result) 
+        print("*"*25)
+        print(f"B_Ops Analyzer Result: {business_ops_result}")
+        print()
 
+        business_ops_reply: str = rf.business_operations_generator(state, business_ops_result) 
+        
         #a failed check or regen still sends the first reply
         try:
             business_ops_enforce: bool = rf.business_operations_enforcer(state, business_ops_reply)
+
+            print("*"*25)
+            print(f"B_Ops Enforcer Result: {business_ops_enforce}")
+            print()
 
             if(business_ops_enforce):
                 business_ops_reply = rf.business_operations_regen(state, business_ops_result, business_ops_reply)
@@ -99,6 +121,10 @@ def mams(state: dict, id: str) -> str:
             #a failed check or regen still sends the first reply
             try:
                 booking_enforce: bool = rf.booking_enforcer(state, booking_details, booking_reply)
+
+                print("*"*25)
+                print(f"Booking Enforcer Result: {booking_enforce}")
+                print()
 
                 if(booking_enforce):
                     booking_reply = rf.booking_regen(state, booking_details, booking_reply)
@@ -139,6 +165,10 @@ def mams(state: dict, id: str) -> str:
         #a failed check or regen still sends the first reply
         try:
             closing_enforce: bool = rf.closing_statements_enforcer(state, closing_reply)
+
+            print("*"*25)
+            print(f"closing_statements Enforcer Result: {closing_enforce}")
+            print()
 
             if(closing_enforce):
                 closing_reply = rf.closing_statements_regen(state, closing_reply)

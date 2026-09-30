@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import PlainTextResponse
 from dotenv import load_dotenv 
+from helpers import username as un
 import uvicorn, asyncio
 from src.core import core
 
@@ -18,15 +19,16 @@ IG_BATCH_TIME: int = 20
 
 #main batch function
 async def batch(id: str):
-    
     await asyncio.sleep(IG_BATCH_TIME) 
 
-    print(message_batch_dict[id]) 
-
     current_message_batch: list = message_batch_dict[id] 
-    
+
     del state_dict[id]
     del message_batch_dict[id]
+
+    print(f"INCOMING MESSAGE BATCH FROM on IG from: {un.username_ig(id)}")
+    print(f"Message batch: {current_message_batch}")
+    print()
 
     #call mams with await asyncio.to_thread(mams_fn, mams_args), to create a worker thread for current id to process without stopping program ever
     await asyncio.to_thread(core, current_message_batch, id, "ig")
