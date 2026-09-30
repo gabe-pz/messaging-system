@@ -104,7 +104,8 @@
 
         "tint_removal" : {
             "front_2_windows" : "70$ to remove the tint on the front two windows",
-            "rear_windshield_only" : "150$ to remove the tint on the rear windshield(back window) by itself. This is the price for the back window, do not say you are unsure of it",
+            "rear_windshield_only" : "100$ to remove the tint on the rear windshield(back window) by ITSELF. This is the price for the back window ONLY do not say you are unsure of it",
+            "front_windshield": "100$ to remove the tint on the front windshield(front window) by ITSELF. THIS is the price for the back window ONLY do NOT say if unsure of it",
             "all_sides_and_rear_windshield" : "150$ to remove all sides(includes front 2, since its all side windows) and rear windshield tint"
         },
         

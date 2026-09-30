@@ -1,5 +1,7 @@
+from dotenv import load_dotenv
 import os, requests
 
+load_dotenv()
 IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 
 def username_ig(ig_id: str) -> str:

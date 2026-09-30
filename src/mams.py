@@ -3,19 +3,15 @@ from helpers import username as un
 from helpers import log as lg
 from helpers import senders as send
 from dotenv import load_dotenv
-import os
+import os, re
 
 #HIL 
 load_dotenv() 
 HIL_RECIPENT: str = os.getenv("HIL_RECIPENT")
 
 #S_P BRANCH
-def service_and_pricing_branch(state: dict) -> str:
+def service_and_pricing_branch(state: dict, id: str) -> str:
     s_and_p_result: list = rf.service_and_pricing_analyzer(state) 
-
-    print("*"*25)
-    print(f"S_P Analyzer Result: {s_and_p_result}")
-    print()
 
     s_and_p_reply: str = rf.service_and_pricing_generator(state, s_and_p_result)
 
@@ -28,14 +24,15 @@ def service_and_pricing_branch(state: dict) -> str:
 
         if(s_and_p_enforce):
             s_and_p_reply = rf.service_and_pricing_regen(state, s_and_p_result, s_and_p_reply)
-            return s_and_p_reply
-        else: 
-            return s_and_p_reply
 
     except Exception as error:
         print("S_P CHECK ERROR: " + str(error))
 
-        return s_and_p_reply
+    #s_p asked for pictures, so wait on them before handing off to a human, same as services_req_humans
+    if(re.search(r"send.{0,40}\b(pics?|pictures?|photos?)\b", s_and_p_reply, re.IGNORECASE)):
+        lg.add_id(lg.HIL_QUEUE_KEY, id)
+
+    return s_and_p_reply
 
 
 #HIL ALERT
@@ -71,15 +68,11 @@ def mams(state: dict, id: str) -> str:
 
     #s_p branch
     if(route_result == "service_and_pricing"):
-        return service_and_pricing_branch(state)
+        return service_and_pricing_branch(state, id)
 
     #business_ops branch 
     elif(route_result == "business_operations"):
         business_ops_result: list = rf.business_operations_analyzer(state) 
-
-        print("*"*25)
-        print(f"B_Ops Analyzer Result: {business_ops_result}")
-        print()
 
         business_ops_reply: str = rf.business_operations_generator(state, business_ops_result) 
         
@@ -146,7 +139,7 @@ def mams(state: dict, id: str) -> str:
                 return car_model_reply
             #car known but never priced, so price it first
             else: 
-                return service_and_pricing_branch(state)
+                return service_and_pricing_branch(state, id)
 
 
     #services_req_humans branch
