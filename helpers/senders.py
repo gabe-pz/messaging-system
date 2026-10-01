@@ -6,8 +6,12 @@ import requests
 BLOOIO_API_KEY = os.environ["BLOOIO_API_KEY"]
 IG_ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
 
+#getenv so the ig and blooio servers still start before the messenger page token is in .env
+MESSENGER_ACCESS_TOKEN = os.getenv("MESSENGER_ACCESS_TOKEN")
+
 BLOOIO_BASE_URL = "https://backend.blooio.com/v2/api"
 IG_SEND_URL = "https://graph.instagram.com/v25.0/me/messages"
+MESSENGER_SEND_URL = "https://graph.facebook.com/v25.0/me/messages"
 
 def send_ig_message(recipient_id: str, text: str) -> bool:
     try:
@@ -23,6 +27,23 @@ def send_ig_message(recipient_id: str, text: str) -> bool:
         return True
     except Exception as e:
         print(f"[IG] send to {recipient_id} errored: {e}")
+        return False
+
+
+def send_messenger_message(recipient_id: str, text: str) -> bool:
+    try:
+        res = requests.post(
+            MESSENGER_SEND_URL,
+            headers={"Authorization": f"Bearer {MESSENGER_ACCESS_TOKEN}", "Content-Type": "application/json"},
+            json={"recipient": {"id": recipient_id}, "messaging_type": "RESPONSE", "message": {"text": text}},
+            timeout=20,
+        )
+        if res.status_code >= 400:
+            print(f"[MESSENGER] send to {recipient_id} failed {res.status_code}: {res.text[:300]}")
+            return False
+        return True
+    except Exception as e:
+        print(f"[MESSENGER] send to {recipient_id} errored: {e}")
         return False
 
 

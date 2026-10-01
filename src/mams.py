@@ -82,15 +82,15 @@ def booking_branch(state: dict, id: str) -> str:
 
 
 #HIL ALERT
-def hil_alert(reason: str, id: str, state: dict) -> None:
+def hil_alert(reason: str, id: str, state: dict, channel: str) -> None:
     user_text: str = state["current_user_message"]["user_text"]
-    user_name: str = un.username_ig(id) 
+    user_name: str = un.username(id, channel)
 
-    send.send_blooio_message(HIL_RECIPENT, f"HIL TRIGERED, due to {reason}\nCUSTOMER: {user_name}\nMESSAGE: {user_text}")
+    send.send_blooio_message(HIL_RECIPENT, f"HIL TRIGERED, due to {reason}\nCHANNEL: {channel}\nCUSTOMER: {user_name}\nMESSAGE: {user_text}")
 
 
 #MAMS
-def mams(state: dict, id: str) -> str: 
+def mams(state: dict, id: str, channel: str) -> str: 
 
     #customer was asked for pictures, so jev decides if they are answering that ask, asking something on the side, or broke out of it
     if(lg.has_id(lg.HIL_QUEUE_KEY, id)):
@@ -104,7 +104,7 @@ def mams(state: dict, id: str) -> str:
         if(waiting_result == "pictures"):
             ack_reply: str = rf.acknowledge_service_gen(state)
 
-            hil_alert("HUMAN NEEDED FOR SERVICE", id, state)
+            hil_alert("HUMAN NEEDED FOR SERVICE", id, state, channel)
 
             lg.add_id(lg.RESTRICTED_KEY, id)
 
@@ -199,7 +199,7 @@ def mams(state: dict, id: str) -> str:
         phone_reply: str = rf.phone_call_gen(state)
 
         #trigger hil
-        hil_alert("PHONE CALL", id, state)
+        hil_alert("PHONE CALL", id, state, channel)
         lg.add_id(lg.RESTRICTED_KEY, id)
 
         return phone_reply
@@ -208,7 +208,7 @@ def mams(state: dict, id: str) -> str:
         esclation_reply: str = rf.escalation_gen(state)
 
         #trigger hil
-        hil_alert("ESCLATION", id, state)
+        hil_alert("ESCLATION", id, state, channel)
         lg.add_id(lg.RESTRICTED_KEY, id)
 
         return esclation_reply
@@ -219,7 +219,7 @@ def mams(state: dict, id: str) -> str:
 
     #covers owner_convo and general_text, a human takes over so the owner is told who it is
     else:
-        hil_alert(route_result.upper(), id, state)
+        hil_alert(route_result.upper(), id, state, channel)
         lg.add_id(lg.RESTRICTED_KEY, id)
         return ""
 

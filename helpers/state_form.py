@@ -146,6 +146,63 @@ def media_element_form(attatchments: list, referrals: list, channel: str) -> lis
 
         return media_elements
 
+    elif(channel == "messenger"):
+        media_processed: list[list] = []
+
+        #prepare attatchments for processing
+        for attatchment in attatchments:
+            for x in attatchment:
+                type_media: str = x.get("type")
+                payload: dict = x.get("payload") or {}
+                title: str = payload.get("title") or ""
+
+                #photos, videos, and shared posts are downloaded, a shared post keeps its caption
+                if(type_media in ["image", "video", "post", "ig_post"]):
+                    data_url_and_type: tuple = prepare_media(payload.get("url"))
+
+                    media_processed.append([data_url_and_type, title])
+
+                #shared links and reels are not downloaded, their title is the caption
+                elif(type_media in ["fallback", "reel", "ig_reel"]):
+                    media_processed.append(["", title])
+
+                #audio, files, and anything else cannot be described
+                else:
+                    media_processed.append(["", ""])
+
+        #prepare referrals(ads) for processing, video_url is the thumbnail of the ad video so both are images
+        for referral in referrals:
+            data: dict = referral.get("ads_context_data") or {}
+            ad_url: str = data.get("photo_url") or data.get("video_url") or ""
+            ad_title: str = data.get("ad_title") or ""
+
+            if(ad_url):
+                data_url_and_type: tuple = prepare_media(ad_url)
+
+                media_processed.append([data_url_and_type, ad_title])
+
+            else:
+                media_processed.append(["", ad_title])
+
+        #process all media
+        for i, media_proccesing in enumerate(media_processed):
+            if(media_proccesing[0] != ""):
+                data_url: str = media_proccesing[0][0]
+                type_media: str = media_proccesing[0][1]
+
+                media_processed[i][0] = process_media(data_url, type_media)
+
+        #same two fields as instagram, so the prompts read a shop post or ad the same way on both
+        media_elements: list[dict] = []
+
+        for media in media_processed:
+            media_elements.append({
+                "media_description(if applicable)": media[0],
+                "post_description(if applicable)": media[1]
+            })
+
+        return media_elements
+
 
 #function that forms the message in the state
 def message_form(current_message_batch: list, channel: str) -> dict:

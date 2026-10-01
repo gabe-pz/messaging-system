@@ -29,9 +29,9 @@ def s_p_enforce() -> str:
     3. The price is the very first thing in the response, or comes after the closing question or statement. The price sits in the MIDDLE: after the opening information and before the closing question or statement.
     4. The response mentions tax, fees, or markups on top of a price. All prices are final.
     5. The response names a vehicle the customer did not type. A vehicle that only shows up in media counts as not typed, unless the customer's text claims it as theirs.
-    6. The response prices a service that depends on the vehicle when the customer has not typed a vehicle, instead of asking for the year, make, and model. Quoting the window tint main package (299$) with no vehicle is correct and never breaks this rule.
-    7. The response explains how the pricing works or lists prices by vehicle type or tier, like "3000$ for cars, 4000$ for trucks", when the customer did not explicitly ask for that.
-    8. The response mentions a price the customer did not explicitly ask about, like 150$ for front windshield tint when they only asked about the side and rear windows, or 600$ per door for door jams when they asked about a wrap.
+    6. The response prices a service that depends on the vehicle when the customer has not typed a vehicle, instead of asking for the year, make, and model. Quoting the window tint main package (299$ nano ceramic, 450$ nano ceramic plus, 600$ NEX+ series ceramic) with no vehicle is correct and never breaks this rule.
+    7. The response explains how the pricing works or lists prices by vehicle type or tier, like "3000$ for cars, 4000$ for trucks", when the customer did not explicitly ask for that. Laying out the window tint tiers on the customer's first message (`message_history` is empty) is correct and never breaks this rule.
+    8. The response mentions a price the customer did not explicitly ask about, like 150$ for front windshield tint when they only asked about the side and rear windows, or 600$ per door for door jams when they asked about a wrap. The window tint tier prices for the job they asked about, laid out on the customer's first message, are fine.
     9. The response says door jams are included in a vinyl wrap, or prices them as anything other than an extra 600$ PER DOOR on top of the wrap.
     10. An agent response in `message_history` already quoted a price for the same job and the response gives a different price for it. For a different job or vehicle, the response must say in one short clause that it is a different job before giving the new price. A price that silently changes breaks this rule. Adding a new priced part to the job, like tint removal, and giving the new total with that part's price is fine.
     11. The response says the window tint main package price depends on the vehicle. It is 299$ on every vehicle except a Tesla Model 3.
@@ -49,7 +49,7 @@ def s_p_enforce() -> str:
     7. Wrapping the FACTORY hood of any vehicle: 300$.
     ##Tint Tiers And Service Notes
     -The response also breaks a special pricing rule when:
-    8. The response explains the difference between the tint tiers without saying that all three block 99% of UV rays and that the main difference is heat rejection: up to 91% for nano ceramic, up to 97% for nano ceramic plus, and up to 99% for NEX+ series ceramic, each with its main package price.
+    8. The response explains the difference between the tint tiers or lays out all three without saying that all three block 99% of UV rays and that the main difference is heat rejection: up to 91% for nano ceramic, up to 97% for nano ceramic plus, and up to 99% for NEX+ series ceramic, each with its price.
     9. The customer asks which tint tier to get and the response recommends anything other than nano ceramic plus, the most popular option.
     10. The response gives any price for a motorcycle.
     11. The response offers a military, veteran, or other discount. When the customer asks for any discount on window tint, the only allowed answer is that a tint special is already running and the best the shop can do is throw in a free windshield brow tint.
@@ -64,7 +64,7 @@ def s_p_enforce() -> str:
     -The response breaks a wording rule when:
     1. The response uses the word "base" for any service.
     2. The response says "normal film". It must be called a "high quality film".
-    3. The response mentions a tier or option the customer did not ask about, like chrome film or NEX+ series ceramic.
+    3. The response mentions a tier or option the customer did not ask about, like chrome film or NEX+ series ceramic. Laying out the window tint tiers on the customer's first message (`message_history` is empty) is fine. On any later message, giving more than one tint tier's price breaks this rule unless `current_user_message` asks about the tiers or tint options, like "what tints do you have", "anything better", "whats the difference", or "whats your best tint". Tiers an agent response in `message_history` already laid out do not count as asking.
     4. The response mentions the 1.70$ per star figure for starlight headliners.
     5. The response calls the price exotic pricing, or calls the customer's vehicle exotic.
     6. The customer is replying to the shop's own media that shows a car, it is NOT a window tint post, and the response prices the service for the car in that media. The response must give details about the service and ask for the customer's year, make, and model. Window tint posts are the exception.

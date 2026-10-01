@@ -104,12 +104,12 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
             #one retry so a timed out or busy model still gets a real reply out
             try:
-                agent_response = m.mams(state, id)
+                agent_response = m.mams(state, id, channel)
 
             except Exception as error:
                 print("MAMS ERROR, RETRYING: " + str(error))
 
-                agent_response = m.mams(state, id)
+                agent_response = m.mams(state, id, channel)
 
         #examples wrap replies in quotes, so a stray quote the model copies over is cut off
         agent_response = agent_response.strip().strip('"')
@@ -131,6 +131,8 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
             send.send_ig_message(id, agent_response)
         elif(channel == "blooio"):
             send.send_blooio_message(id, agent_response)
+        elif(channel == "messenger"):
+            send.send_messenger_message(id, agent_response)
 
         print(f"AGENT SENT: {agent_response}")
         print()
