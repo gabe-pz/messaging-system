@@ -16,6 +16,8 @@ from src.prompts.business_ops import b_o_regen_sys_prompt as boRE
 from src.prompts.hil import s_rh_gen_sys_prompt as srhSP
 from src.prompts.hil import ack_gen_sys_prompt as ackSP
 from src.prompts.hil import escalation_gen_sys_prompt as escSP
+from src.prompts.hil import restricted_instructions as restrictedI
+from src.prompts.hil import waiting_instructions as waitingI
 
 from src.prompts.booking import b_gen_sys_prompt as bgSP
 from src.prompts.booking import b_enforce as bE
@@ -736,4 +738,70 @@ def phone_call_gen(state: dict) -> str:
     reply: str = result["choices"][0]["message"]["content"]
 
     return reply
+
+
+# RESTRICTED ANALYZER
+def restricted_analyzer(state: dict) -> str:
+    RESTRICTED_CONFIDENCE_THRESHOLD: float = 0.45
+
+    restricted_criteria: dict[str, str] = {"service_and_pricing": restrictedI.service_and_pricing_instructions(), "booking": restrictedI.booking_instructions(), "ignore": restrictedI.ignore_instructions()}
+
+    restricted_question: dict = {"type": "choice", "instructions": restrictedI.restricted_instructions(), "criteria": restricted_criteria}
+
+    questions: dict = {"restricted": restricted_question}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    payload: dict = {"model": ROUTER_MODEL, "state": state, "questions": questions}
+
+    http_response: requests.Response = requests.post(DECISIONS_URL, headers=headers, json=payload, timeout=10)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    restricted_answer: dict = result["answers"]["restricted"]
+
+    category: str = restricted_answer["choice"]
+
+    confidence: float = restricted_answer["confidence"]
+
+    #a human owns this customer, so an unsure answer is left to them and stays ignored
+    if(confidence < RESTRICTED_CONFIDENCE_THRESHOLD):
+        return "ignore"
+
+    return category
+
+
+# WAITING ANALYZER
+def waiting_analyzer(state: dict) -> str:
+    WAITING_CONFIDENCE_THRESHOLD: float = 0.45
+
+    waiting_criteria: dict[str, str] = {"pictures": waitingI.pictures_instructions(), "side_question": waitingI.side_question_instructions(), "broke_out": waitingI.broke_out_instructions()}
+
+    waiting_question: dict = {"type": "choice", "instructions": waitingI.waiting_instructions(), "criteria": waiting_criteria}
+
+    questions: dict = {"waiting": waiting_question}
+
+    headers: dict = {"Authorization": f"Bearer {OPENROUTER_API_KEY}", "Content-Type": "application/json"}
+
+    payload: dict = {"model": ROUTER_MODEL, "state": state, "questions": questions}
+
+    http_response: requests.Response = requests.post(DECISIONS_URL, headers=headers, json=payload, timeout=10)
+
+    http_response.raise_for_status()
+
+    result: dict = http_response.json()
+
+    waiting_answer: dict = result["answers"]["waiting"]
+
+    category: str = waiting_answer["choice"]
+
+    confidence: float = waiting_answer["confidence"]
+
+    #the owner still has to price the custom job, so an unsure answer goes to them like the pictures do
+    if(confidence < WAITING_CONFIDENCE_THRESHOLD):
+        return "pictures"
+
+    return category
 

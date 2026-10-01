@@ -6,7 +6,7 @@ from helpers.log import write, write_bs, read_bs, has_id, RESTRICTED_KEY
 from helpers import senders as send
 
 from src import mams as m
-from src.rage_functions import BOOKING_LINK
+from src.rage_functions import BOOKING_LINK, restricted_analyzer
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -78,15 +78,27 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
     #RESPONSE OF "AGENT"
     agent_response: str = ""
 
-    restricted: bool = False
-
     try:
 
-        #restricted customers are handled by a human, so the system does not respond to them
-        restricted = has_id(RESTRICTED_KEY, id)
+        #restricted customers are handled by a human, so the system only answers their service and booking questions
+        restricted: bool = has_id(RESTRICTED_KEY, id)
 
         if(restricted):
+
             print("RESTRICTED: " + id)
+
+            #jev decides if the message is a service or booking question the system can answer, anything else stays ignored
+            restricted_result: str = restricted_analyzer(state)
+
+            print(f"RESTRICTED RESULT: {restricted_result}")
+            print()
+
+            #answered straight from the branch so the customer stays restricted and skips mams
+            if(restricted_result == "service_and_pricing"):
+                agent_response = m.service_and_pricing_branch(state, id)
+
+            elif(restricted_result == "booking"):
+                agent_response = m.booking_branch(state, id)
 
         else:
 
@@ -99,14 +111,14 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
                 agent_response = m.mams(state, id)
 
-            #examples wrap replies in quotes, so a stray quote the model copies over is cut off
-            agent_response = agent_response.strip().strip('"')
+        #examples wrap replies in quotes, so a stray quote the model copies over is cut off
+        agent_response = agent_response.strip().strip('"')
 
-            #pricing and booking link states updated 
-            if("$" in agent_response):
-                write_bs(f"{id}_bstate", {"pricing_state": "SENT"}) 
-            if(BOOKING_LINK in agent_response):
-                write_bs(f"{id}_bstate", {"booking_link_state": "SENT"})
+        #pricing and booking link states updated 
+        if("$" in agent_response):
+            write_bs(f"{id}_bstate", {"pricing_state": "SENT"}) 
+        if(BOOKING_LINK in agent_response):
+            write_bs(f"{id}_bstate", {"booking_link_state": "SENT"})
 
 
     except Exception as error:
@@ -114,7 +126,7 @@ def core(current_message_batch: list, id: str, channel: str) -> None:
 
     
     #SEND RESPONSE FOR PARICULAR CHANNEL 
-    if(agent_response != "" and not restricted): 
+    if(agent_response != ""): 
         if(channel == "ig"):
             send.send_ig_message(id, agent_response)
         elif(channel == "blooio"):

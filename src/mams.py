@@ -35,6 +35,52 @@ def service_and_pricing_branch(state: dict, id: str) -> str:
     return s_and_p_reply
 
 
+#BOOKING BRANCH
+def booking_branch(state: dict, id: str) -> str:
+    booking_state: dict = lg.read_bs(f"{id}_bstate")
+
+    car_model: str = booking_state.get("car_model", "")
+
+    pricing_sent: str = booking_state.get("pricing_state", "")
+
+    if(car_model != "" and pricing_sent != ""):
+        booking_link_sent: bool = booking_state.get("booking_link_state", "") != ""
+
+        booking_details: dict = {"booking_link": rf.BOOKING_LINK, "booking_link_sent": booking_link_sent, "car_model": car_model}
+
+        booking_reply: str = rf.booking_generator(state, booking_details)
+
+        #a failed check or regen still sends the first reply
+        try:
+            booking_enforce: bool = rf.booking_enforcer(state, booking_details, booking_reply)
+
+            print("*"*25)
+            print(f"Booking Enforcer Result: {booking_enforce}")
+            print()
+
+            if(booking_enforce):
+                booking_reply = rf.booking_regen(state, booking_details, booking_reply)
+
+                return booking_reply
+
+            else:
+                return booking_reply
+
+        except Exception as error:
+            print("BOOKING CHECK ERROR: " + str(error))
+
+            return booking_reply
+    else: 
+        #no car yet, so ask for it before booking
+        if(car_model == ""):
+            car_model_reply: str = rf.car_model_integrator_gen(state)
+
+            return car_model_reply
+        #car known but never priced, so price it first
+        else: 
+            return service_and_pricing_branch(state, id)
+
+
 #HIL ALERT
 def hil_alert(reason: str, id: str, state: dict) -> None:
     user_text: str = state["current_user_message"]["user_text"]
@@ -46,17 +92,31 @@ def hil_alert(reason: str, id: str, state: dict) -> None:
 #MAMS
 def mams(state: dict, id: str) -> str: 
 
-    #customer is answering the picture request, so acknowledge it and hand them to a human
+    #customer was asked for pictures, so jev decides if they are answering that ask, asking something on the side, or broke out of it
     if(lg.has_id(lg.HIL_QUEUE_KEY, id)):
-        ack_reply: str = rf.acknowledge_service_gen(state)
+        waiting_result: str = rf.waiting_analyzer(state)
 
-        hil_alert("HUMAN NEEDED FOR SERVICE", id, state)
+        print("*"*25)
+        print(f"WAITING RESULT: {waiting_result}")
+        print()
 
-        lg.add_id(lg.RESTRICTED_KEY, id)
+        #customer is answering the picture request, so acknowledge it and hand them to a human
+        if(waiting_result == "pictures"):
+            ack_reply: str = rf.acknowledge_service_gen(state)
 
-        lg.remove_id(lg.HIL_QUEUE_KEY, id)
+            hil_alert("HUMAN NEEDED FOR SERVICE", id, state)
 
-        return ack_reply
+            lg.add_id(lg.RESTRICTED_KEY, id)
+
+            lg.remove_id(lg.HIL_QUEUE_KEY, id)
+
+            return ack_reply
+
+        #customer dropped the custom job, so they stop waiting on the pictures
+        elif(waiting_result == "broke_out"):
+            lg.remove_id(lg.HIL_QUEUE_KEY, id)
+
+        #broke_out and side_question are routed like any other message, a side question still waits on the pictures
 
     #ROUTE
     route_result: str = rf.route(state)
@@ -98,48 +158,7 @@ def mams(state: dict, id: str) -> str:
 
     #booking branch
     elif(route_result == "booking"):
-        booking_state: dict = lg.read_bs(f"{id}_bstate")
-
-        car_model: str = booking_state.get("car_model", "")
-
-        pricing_sent: str = booking_state.get("pricing_state", "")
-
-        if(car_model != "" and pricing_sent != ""):
-            booking_link_sent: bool = booking_state.get("booking_link_state", "") != ""
-
-            booking_details: dict = {"booking_link": rf.BOOKING_LINK, "booking_link_sent": booking_link_sent, "car_model": car_model}
-
-            booking_reply: str = rf.booking_generator(state, booking_details)
-
-            #a failed check or regen still sends the first reply
-            try:
-                booking_enforce: bool = rf.booking_enforcer(state, booking_details, booking_reply)
-
-                print("*"*25)
-                print(f"Booking Enforcer Result: {booking_enforce}")
-                print()
-
-                if(booking_enforce):
-                    booking_reply = rf.booking_regen(state, booking_details, booking_reply)
-
-                    return booking_reply
-
-                else:
-                    return booking_reply
-
-            except Exception as error:
-                print("BOOKING CHECK ERROR: " + str(error))
-
-                return booking_reply
-        else: 
-            #no car yet, so ask for it before booking
-            if(car_model == ""):
-                car_model_reply: str = rf.car_model_integrator_gen(state)
-
-                return car_model_reply
-            #car known but never priced, so price it first
-            else: 
-                return service_and_pricing_branch(state, id)
+        return booking_branch(state, id)
 
 
     #services_req_humans branch
